@@ -83,6 +83,20 @@ const LOCAL_PARCOURS_DATA: ChansonDisplay[] = [
 
 // Convertit une chanson PocketBase vers le format d'affichage
 function convertPBToDisplay(chanson: PBChanson, seanceCount: number = 0): ChansonDisplay {
+  // Convertir points_grammaire en strings si ce sont des objets
+  let competences: string[] = [];
+  if (chanson.points_grammaire) {
+    if (Array.isArray(chanson.points_grammaire)) {
+      competences = chanson.points_grammaire.map(p => {
+        if (typeof p === 'string') return p;
+        if (typeof p === 'object' && p !== null && 'point' in p) {
+          return p.point as string;
+        }
+        return '';
+      }).filter(Boolean);
+    }
+  }
+
   return {
     id: chanson.id,
     slug: createSlug(chanson.titre),
@@ -98,7 +112,7 @@ function convertPBToDisplay(chanson: PBChanson, seanceCount: number = 0): Chanso
     thematiques: chanson.themes || [],
     duree: chanson.duree,
     nombreSeances: seanceCount,
-    competencesCibles: chanson.points_grammaire || [],
+    competencesCibles: competences,
   };
 }
 

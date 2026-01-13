@@ -42,8 +42,14 @@ export interface Chanson {
     mot: string;
     definition: string;
     exemple?: string;
-  }>;
-  points_grammaire?: string[];
+  }> | Record<string, string>;
+  points_grammaire?: Array<{
+    point: string;
+    explication: string;
+    exemples: string[];
+    usage: string;
+    niveau: string;
+  }> | string[];
   contexte_culturel?: string;
   created: string;
   updated: string;
