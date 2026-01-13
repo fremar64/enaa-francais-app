@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { Music2, Github, Mail, Heart } from 'lucide-react';
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  // Année fixe pour éviter les problèmes d'hydratation SSR
+  const currentYear = 2026;
 
   return (
     <footer className="border-t bg-muted/30">
