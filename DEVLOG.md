@@ -1,3 +1,34 @@
+# 2026-01-19 - Composants ScoreCard & DomainRadar
+
+- Ajout du composant ScoreCard pour l'affichage du score CEREDIS et du niveau CECRL
+- Ajout du composant DomainRadar pour la visualisation graphique des scores par domaine
+- Intégration de ces composants dans la page /dashboard/student
+
+# 2026-01-19 - Intégration API CEREDIS & Dashboard
+
+- Création de l'API route /api/ceredis/calculate pour le calcul des scores CEREDIS
+- Ajout d'un client TypeScript pour requêter l'API
+- Création du hook useCeredisScore pour le frontend
+- Création de la page /dashboard/student pour afficher les scores calculés
+
+## 2026-01-19 - Migration moteur CEREDIS
+
+- Extraction de l'archive ceredis-engine-v1.0.tar.gz
+- Création de la structure services/ceredis-calculator/engine et config
+- Conversion des fichiers JS du moteur en TypeScript : evidenceAggregator, competencyCalculator, domainCalculator, ceredisCalculator, cecrlDecider, levelValidator
+- Création d'un index.ts pour exposer toutes les fonctions du moteur
+- Ajout d'un config.ts pour charger la configuration CEREDIS
+
+/* ...dernier log... */
+# [2026-01-18] Migration Next.js 16 et sécurisation des routes
+
+- Migration du projet vers Next.js 16.1.1 : suppression de l’ancien middleware.ts (obsolète), création de proxy.ts pour la protection des routes selon le rôle (élève/enseignant).
+- Correction de tous les problèmes de build (hooks client, typage NextAuth, typage middleware, etc.).
+- Build de production validé sans warning ni erreur.
+- Commit et push sur Github de l’ensemble des modifications.
+
+---
+
 # [2026-01-14] Feuille de route détaillée - Intégration Tracking CEREDIS
 
 ## Objectif principal

@@ -22,6 +22,7 @@ interface RegisterData {
   name: string;
   niveau?: User['niveau_actuel'];
   langueMaternelle?: string;
+  role: 'student' | 'teacher' | 'admin';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const loggedInUser = await pbLogin(email, password);
+      if (!loggedInUser.isValidated) {
+        throw new Error("Votre compte n'a pas encore été validé par un administrateur.");
+      }
       setUser(loggedInUser);
     } finally {
       setIsLoading(false);
@@ -89,7 +93,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data.username,
         data.name,
         data.niveau,
-        data.langueMaternelle
+        data.langueMaternelle,
+        data.role
       );
       setUser(newUser);
     } finally {

@@ -36,6 +36,16 @@ const LANGUES = [
 ];
 
 export default function RegisterPage() {
+    const [adminExists, setAdminExists] = useState<boolean>(false);
+    React.useEffect(() => {
+      // Vérifie s'il existe déjà un compte admin
+      fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL || 'https://pocketbase-songs.ceredis.net'}/api/collections/users/records?filter=role="admin"`)
+        .then(res => res.json())
+        .then(data => {
+          setAdminExists((data?.totalItems || 0) > 0);
+        })
+        .catch(() => setAdminExists(false));
+    }, []);
   const router = useRouter();
   const { register, isLoading } = useAuth();
 
@@ -47,17 +57,23 @@ export default function RegisterPage() {
     name: '',
     niveau: 'A2' as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
     langueMaternelle: 'en',
+    role: 'student' as 'student' | 'teacher' | 'admin',
   });
   const [error, setError] = useState<string | null>(null);
+    const [rawError, setRawError] = useState<any>(null);
   const [step, setStep] = useState(1);
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === 'role') {
+      setFormData((prev) => ({ ...prev, role: value as 'student' | 'teacher' | 'admin' }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
     setError(null);
   };
 
   const validateStep1 = () => {
-    if (!formData.email || !formData.password || !formData.passwordConfirm) {
+    if (!formData.email || !formData.password || !formData.passwordConfirm || !formData.role) {
       setError('Veuillez remplir tous les champs');
       return false;
     }
@@ -104,26 +120,49 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setRawError(null);
 
     try {
       await register(formData);
       router.push('/');
     } catch (err: unknown) {
       console.error('Erreur d\'inscription:', err);
-      if (err && typeof err === 'object' && 'data' in err) {
-        const pbError = err as { data?: { data?: Record<string, { message?: string }> } };
+      setRawError(err);
+      // Gestion explicite de l'erreur admin
+      if (err instanceof Error && err.message.includes('Un compte administrateur existe déjà')) {
+        setError("Un compte administrateur existe déjà. Impossible d'en créer un second.");
+      } else if (err && typeof err === 'object' && 'data' in err) {
+        const pbError = err as { data?: { data?: Record<string, { message?: string }> }, message?: string };
         const errorData = pbError.data?.data;
         if (errorData?.email?.message) {
           setError('Cet email est déjà utilisé');
         } else if (errorData?.username?.message) {
           setError('Ce nom d\'utilisateur est déjà pris');
+        } else if (pbError.message) {
+          setError('Erreur PocketBase : ' + pbError.message);
         } else {
           setError('Erreur lors de l\'inscription. Veuillez réessayer.');
         }
+      } else if (err instanceof Error && err.message) {
+        setError('Erreur : ' + err.message);
       } else {
         setError('Erreur lors de l\'inscription. Veuillez réessayer.');
       }
     }
+            {rawError && (
+              <div className="mt-2 p-2 bg-red-100 text-xs text-red-800 overflow-x-auto max-w-full">
+                <div><b>Erreur brute :</b> {rawError.toString ? rawError.toString() : String(rawError)}</div>
+                {rawError.message && <div><b>message :</b> {rawError.message}</div>}
+                {rawError.data && (
+                  <div><b>data :</b> <pre>{JSON.stringify(rawError.data, null, 2)}</pre></div>
+                )}
+                {rawError.response && (
+                  <div><b>response :</b> <pre>{JSON.stringify(rawError.response, null, 2)}</pre></div>
+                )}
+                {rawError.stack && <div><b>stack :</b> <pre>{rawError.stack}</pre></div>}
+                <div><b>Propriétés énumérables :</b> <pre>{JSON.stringify(Object.assign({}, rawError), null, 2)}</pre></div>
+              </div>
+            )}
   };
 
   const getPasswordStrength = () => {
@@ -158,6 +197,27 @@ export default function RegisterPage() {
           <CardDescription>
             Rejoignez notre communauté d&apos;apprenants
           </CardDescription>
+          <div className="mt-4">
+            <Label htmlFor="role">Rôle</Label>
+            <select
+              id="role"
+              className="select select-bordered w-full mt-1"
+              value={formData.role}
+              onChange={e => handleChange('role', e.target.value)}
+              required
+            >
+              <option value="student">Élève</option>
+              <option value="teacher">Enseignant</option>
+              <option value="admin" disabled={adminExists} style={adminExists ? { display: 'none' } : {}}>
+                Administrateur
+              </option>
+            </select>
+            {adminExists && (
+              <div className="mt-2 text-sm text-red-600">
+                Un compte administrateur existe déjà. Il n'est pas possible d'en créer un autre.
+              </div>
+            )}
+          </div>
 
           {/* Progress indicator */}
           <div className="flex items-center justify-center gap-2 mt-4">

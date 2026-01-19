@@ -1,0 +1,138 @@
+{
+  "version": "1.0",
+  "description": "Configuration canonique du moteur CEREDIS - Échelle 0-600 alignée CECRL",
+  
+  "scale": {
+    "min": 0,
+    "max": 600,
+    "description": "Échelle CEREDIS continue (0-600) alignée sur niveaux CECRL"
+  },
+
+  "evidenceWeights": {
+    "P1": 0.15,
+    "P2": 0.30,
+    "P3": 0.35,
+    "P4": 0.20
+  },
+
+  "evidenceTypes": {
+    "P1": {
+      "name": "Réception simple",
+      "description": "QCM, repérage, réponse guidée",
+      "examples": ["qcm", "identification", "reperage"]
+    },
+    "P2": {
+      "name": "Analyse guidée",
+      "description": "Analyse linguistique ciblée",
+      "examples": ["analyse_guidee", "qcm_justifie", "texte_trous"]
+    },
+    "P3": {
+      "name": "Production argumentée",
+      "description": "Commentaire, dissertation, texte structuré",
+      "examples": ["commentaire", "dissertation", "production_ecrite"]
+    },
+    "P4": {
+      "name": "Métacognition",
+      "description": "Journal réflexif, auto-évaluation",
+      "examples": ["journal_reflexif", "auto_evaluation", "bilan"]
+    }
+  },
+
+  "domains": {
+    "D1": {
+      "name": "Compréhension de l'oral (chansons)",
+      "weight": 0.20,
+      "competencies": ["1.1", "1.2", "1.3"]
+    },
+    "D2": {
+      "name": "Compréhension de l'écrit (paroles)",
+      "weight": 0.20,
+      "competencies": ["2.1", "2.2", "2.3"]
+    },
+    "D3": {
+      "name": "Production écrite",
+      "weight": 0.20,
+      "competencies": ["3.1", "3.2", "3.3"]
+    },
+    "D4": {
+      "name": "Interaction et confrontation des interprétations",
+      "weight": 0.20,
+      "competencies": ["4.1", "4.2", "4.3"]
+    },
+    "D5": {
+      "name": "Compétences métalinguistiques et métacognitives",
+      "weight": 0.20,
+      "competencies": ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7"],
+      "minScore": 60,
+      "requiredEvidenceTypes": ["P4"],
+      "description": "Innovation CEREDIS - Domaine critique pour B2 et C1"
+    }
+  },
+
+  "competencies": {
+    "1.1": { "name": "Comprendre sens global chanson", "niveau": "A2", "domaine": "D1" },
+    "1.2": { "name": "Identifier éléments implicites oral", "niveau": "B1", "domaine": "D1" },
+    "1.3": { "name": "Interpréter intention implicite complexe", "niveau": "B2", "domaine": "D1" },
+    
+    "2.1": { "name": "Comprendre texte chanté narratif", "niveau": "A2-B1", "domaine": "D2" },
+    "2.2": { "name": "Identifier point de vue paroles", "niveau": "B2", "domaine": "D2" },
+    "2.3": { "name": "Analyser texte symbolique complexe", "niveau": "C1", "domaine": "D2" },
+    
+    "3.1": { "name": "Exprimer opinion argumentée", "niveau": "B1", "domaine": "D3" },
+    "3.2": { "name": "Rédiger commentaire structuré", "niveau": "B2", "domaine": "D3" },
+    "3.3": { "name": "Produire dissertation interprétative", "niveau": "C1", "domaine": "D3" },
+    
+    "4.1": { "name": "Réagir interprétation pair", "niveau": "B1", "domaine": "D4" },
+    "4.2": { "name": "Comparer interprétations", "niveau": "B2", "domaine": "D4" },
+    "4.3": { "name": "Conduire débat interprétatif", "niveau": "C1", "domaine": "D4" },
+    
+    "5.1": { "name": "Identifier formes grammaticales", "niveau": "A2", "domaine": "D5" },
+    "5.2": { "name": "Relier forme et sens", "niveau": "B1", "domaine": "D5" },
+    "5.3": { "name": "Analyser valeur sémantique modes/temps", "niveau": "B2", "domaine": "D5" },
+    "5.4": { "name": "Analyser phrase complexe/raisonnement", "niveau": "B2", "domaine": "D5" },
+    "5.5": { "name": "Mobiliser analyse linguistique", "niveau": "C1", "domaine": "D5" },
+    "5.6": { "name": "Verbaliser stratégies compréhension", "niveau": "B2", "domaine": "D5" },
+    "5.7": { "name": "Réguler production écrite", "niveau": "B2-C1", "domaine": "D5" }
+  },
+
+  "cecrlThresholds": {
+    "A2": [200, 299],
+    "B1": [300, 399],
+    "B2": [400, 499],
+    "C1": [500, 599]
+  },
+
+  "levels": {
+    "B2": {
+      "minScore": 400,
+      "requiredEvidenceTypes": ["P3"],
+      "requiredDomains": {
+        "D5": { "minScore": 60 }
+      },
+      "description": "B2 requiert au moins une preuve P3 ET Domaine 5 >= 60"
+    },
+    "C1": {
+      "minScore": 500,
+      "requiredEvidenceTypes": ["P3", "P4"],
+      "requiredDomains": {
+        "D5": { "minScore": 70 }
+      },
+      "description": "C1 requiert P3 ET P4 ET Domaine 5 >= 70"
+    }
+  },
+
+  "validation": {
+    "minEvidencePerCompetency": 1,
+    "minScorePerEvidence": 0,
+    "maxScorePerEvidence": 100,
+    "requireDiverseEvidenceForD5": true
+  },
+
+  "metadata": {
+    "createdBy": "CEREDIS Team",
+    "createdAt": "2026-01-11",
+    "lastModified": "2026-01-11",
+    "institution": "CEREDIS - UNESCO/Banque mondiale",
+    "scientificReference": "CECRL enrichi par métacognition linguistique"
+  }
+}
