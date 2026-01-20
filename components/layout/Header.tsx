@@ -60,16 +60,16 @@ export function Header() {
           </Link>
           {isAuthenticated && (
             <>
-              <Link href="/dashboard">
+              <Link href="/dashboard/student">
                 <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
                   <BarChart3 className="mr-2 h-4 w-4" />
-                  Dashboard
+                  Dashboard Élève
                 </Button>
               </Link>
-              <Link href="/enseignant">
+              <Link href="/dashboard/teacher">
                 <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
                   <GraduationCap className="mr-2 h-4 w-4" />
-                  Enseignant
+                  Dashboard Enseignant
                 </Button>
               </Link>
               <Link href="/parcours">

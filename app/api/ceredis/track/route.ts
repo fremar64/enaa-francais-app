@@ -10,6 +10,7 @@ import { getCassClient } from '@/lib/cass-client';
 import type { ActivityCompletionData } from '@/services/integration-unified/integration.unified';
 import { MAPPING_ACTIVITES_COMPETENCES } from '@/services/integration/types';
 import type { NiveauCECRL } from '@/services/integration/types';
+import { sendSlackAlert } from '@/services/monitoring/alert.service';
 
 /**
  * Vérifier si une activité peut valider des compétences du Domaine 5 (métalinguistique)
@@ -152,6 +153,9 @@ export async function POST(request: NextRequest) {
       } catch (error: any) {
         result.errors.push(`xAPI: ${error.message}`);
         console.error('[API] xAPI error:', error);
+        await sendSlackAlert(
+          `[TRACKING ERROR][xAPI] ${error.message}\nUser: ${data?.userId || 'unknown'} | Activity: ${data?.activityType}\n${error.stack || ''}`
+        );
       }
     }
 
@@ -262,6 +266,9 @@ export async function POST(request: NextRequest) {
           } catch (error: any) {
             result.errors.push(`CaSS assertion ${compId}: ${error.message}`);
             console.error(`[API] CaSS assertion error for ${compId}:`, error);
+            await sendSlackAlert(
+              `[TRACKING ERROR][CaSS assertion] ${error.message}\nComp: ${compId} | User: ${data?.userId || 'unknown'} | Activity: ${data?.activityType}\n${error.stack || ''}`
+            );
           }
         }
 
@@ -269,6 +276,9 @@ export async function POST(request: NextRequest) {
       } catch (error: any) {
         result.errors.push(`CaSS: ${error.message}`);
         console.error('[API] CaSS error:', error);
+        await sendSlackAlert(
+          `[TRACKING ERROR][CaSS] ${error.message}\nUser: ${data?.userId || 'unknown'} | Activity: ${data?.activityType}\n${error.stack || ''}`
+        );
       }
     }
 
