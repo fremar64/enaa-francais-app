@@ -75,6 +75,13 @@ export default function DashboardEnseignantPage() {
     couleur: d.couleur
   }));
 
+  // Construire un objet domainesScores attendu par `RadarCompetences`
+  const domainesScores: Record<string, number> = profilDomaines.reduce((acc, d) => {
+    const key = d.abbrev || d.domaineName || String(d.domaine);
+    acc[key] = d.score;
+    return acc;
+  }, {} as Record<string, number>);
+
   // Gérer la sélection d'une compétence
   const handleSelectCompetence = (competence: CompetenceCritique) => {
     setCompetenceSelectionnee(competence);
@@ -200,11 +207,7 @@ export default function DashboardEnseignantPage() {
                     </TabsList>
                     
                     <TabsContent value="synthese" className="mt-4">
-                      <RadarCompetences 
-                        data={radarData}
-                        title="Profil par domaines"
-                        showLegend
-                      />
+                      <RadarCompetences domainesScores={domainesScores} />
                     </TabsContent>
                     
                     <TabsContent value="competences" className="mt-4">
