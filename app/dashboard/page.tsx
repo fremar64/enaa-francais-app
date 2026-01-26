@@ -201,7 +201,7 @@ function DashboardContent() {
                     </div>
                     <div>
                       <span className="font-medium">Collection:</span>{' '}
-                      <span className="text-muted-foreground">{user?.collectionName}</span>
+                      <span className="text-muted-foreground">users</span>
                     </div>
                     <div>
                       <span className="font-medium">Compte créé:</span>{' '}
