@@ -1,209 +1,126 @@
 'use client';
 
-/**
- * Composant RadarCompetences
- * Visualisation radar des 5 domaines de compétences CEREDIS
- * 
- * Utilise un graphique SVG personnalisé pour éviter les dépendances lourdes
- */
-
-import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Target } from 'lucide-react';
-import type { DonneesRadar } from '@/types/dashboard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 interface RadarCompetencesProps {
-  data: DonneesRadar[];
-  size?: number;
-  showLegend?: boolean;
-  title?: string;
+  domainesScores: Record<string, number>;
 }
 
-export function RadarCompetences({ 
-  data, 
-  size = 300, 
-  showLegend = true,
-  title = 'Profil de compétences'
-}: RadarCompetencesProps) {
-  const center = size / 2;
-  const radius = (size - 60) / 2; // Marge pour les labels
+const DOMAINES_LABELS: Record<string, string> = {
+  'D1': 'Compréhension orale',
+  'D2': 'Compréhension écrite',
+  'D3': 'Production écrite',
+  'D4': 'Interaction',
+  'D5': 'Métalinguistique',
+};
 
-  // Calculer les points du polygone
-  const radarPoints = useMemo(() => {
-    const numPoints = data.length;
-    const angleStep = (2 * Math.PI) / numPoints;
-    
-    return data.map((item, index) => {
-      const angle = -Math.PI / 2 + index * angleStep; // Commencer en haut
-      const normalizedValue = item.score / item.scoreMax;
-      const x = center + radius * normalizedValue * Math.cos(angle);
-      const y = center + radius * normalizedValue * Math.sin(angle);
-      return { x, y, ...item, angle };
-    });
-  }, [data, center, radius]);
-
-  // Générer les cercles de grille
-  const gridCircles = [0.25, 0.5, 0.75, 1].map(level => ({
-    radius: radius * level,
-    label: `${Math.round(level * 100)}%`
+export function RadarCompetences({ domainesScores }: RadarCompetencesProps) {
+  // Préparer les données pour le graphique
+  const data = Object.entries(domainesScores).map(([domain, score]) => ({
+    domain: DOMAINES_LABELS[domain] || domain,
+    score: score,
+    fullMark: 100,
   }));
 
-  // Générer les lignes de la grille vers chaque sommet
-  const gridLines = useMemo(() => {
-    const numPoints = data.length;
-    const angleStep = (2 * Math.PI) / numPoints;
-    
-    return Array.from({ length: numPoints }, (_, index) => {
-      const angle = -Math.PI / 2 + index * angleStep;
-      return {
-        x: center + radius * Math.cos(angle),
-        y: center + radius * Math.sin(angle)
-      };
-    });
-  }, [data.length, center, radius]);
+  // Calculer le score moyen
+  const scores = Object.values(domainesScores);
+  const moyenneGlobale = scores.length > 0
+    ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+    : 0;
 
-  // Points du polygone pour le path SVG
-  const polygonPath = radarPoints.map((p, i) => 
-    `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
-  ).join(' ') + ' Z';
+  // Identifier le domaine le plus fort et le plus faible
+  const maxDomain = Object.entries(domainesScores).reduce((max, [domain, score]) => 
+    score > max.score ? { domain, score } : max
+  , { domain: '', score: 0 });
 
-  // Positions des labels
-  const labelPositions = useMemo(() => {
-    const numPoints = data.length;
-    const angleStep = (2 * Math.PI) / numPoints;
-    const labelRadius = radius + 25;
-    
-    return data.map((item, index) => {
-      const angle = -Math.PI / 2 + index * angleStep;
-      return {
-        x: center + labelRadius * Math.cos(angle),
-        y: center + labelRadius * Math.sin(angle),
-        anchor: (Math.abs(Math.cos(angle)) < 0.1 
-          ? 'middle' 
-          : Math.cos(angle) > 0 ? 'start' : 'end') as 'middle' | 'start' | 'end',
-        ...item
-      };
-    });
-  }, [data, center, radius]);
-
-  // Score moyen global
-  const scoreMoyen = Math.round(
-    data.reduce((sum, d) => sum + d.score, 0) / data.length
-  );
+  const minDomain = Object.entries(domainesScores).reduce((min, [domain, score]) => 
+    (min.score === 0 || score < min.score) && score > 0 ? { domain, score } : min
+  , { domain: '', score: 100 });
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-display flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            {title}
-          </CardTitle>
-          <Badge variant="outline" className="text-sm">
-            Moyenne : {scoreMoyen}%
-          </Badge>
-        </div>
+      <CardHeader>
+        <CardTitle>Radar des Compétences</CardTitle>
+        <CardDescription>
+          Vue d'ensemble de vos performances par domaine
+        </CardDescription>
       </CardHeader>
-      
-      <CardContent className="flex flex-col items-center">
-        {/* Graphique Radar SVG */}
-        <svg 
-          width={size} 
-          height={size} 
-          className="overflow-visible"
-          viewBox={`0 0 ${size} ${size}`}
-        >
-          {/* Grille circulaire */}
-          {gridCircles.map((circle, i) => (
-            <circle
-              key={i}
-              cx={center}
-              cy={center}
-              r={circle.radius}
-              fill="none"
-              stroke="currentColor"
-              strokeOpacity={0.1}
-              strokeWidth={1}
-            />
-          ))}
-          
-          {/* Lignes de grille vers les sommets */}
-          {gridLines.map((line, i) => (
-            <line
-              key={i}
-              x1={center}
-              y1={center}
-              x2={line.x}
-              y2={line.y}
-              stroke="currentColor"
-              strokeOpacity={0.1}
-              strokeWidth={1}
-            />
-          ))}
-          
-          {/* Zone colorée du profil */}
-          <path
-            d={polygonPath}
-            fill="hsl(var(--primary))"
-            fillOpacity={0.2}
-            stroke="hsl(var(--primary))"
-            strokeWidth={2}
-          />
-          
-          {/* Points sur le graphique */}
-          {radarPoints.map((point, i) => (
-            <g key={i}>
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r={6}
-                fill={point.couleur}
-                stroke="white"
-                strokeWidth={2}
-              />
-              {/* Tooltip au survol */}
-              <title>{`${point.domaine}: ${point.score}%`}</title>
-            </g>
-          ))}
-          
-          {/* Labels des domaines */}
-          {labelPositions.map((label, i) => (
-            <text
-              key={i}
-              x={label.x}
-              y={label.y}
-              textAnchor={label.anchor}
-              dominantBaseline="middle"
-              className="text-xs font-medium fill-current"
-            >
-              <tspan className="font-semibold">{label.abbrev}</tspan>
-              <tspan dx={5} className="text-muted-foreground text-[10px]">
-                {label.score}%
-              </tspan>
-            </text>
-          ))}
-        </svg>
-
-        {/* Légende */}
-        {showLegend && (
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
-            {data.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: item.couleur }}
+      <CardContent>
+        <div className="space-y-4">
+          {/* Graphique Radar */}
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={data}>
+                <PolarGrid stroke="#e5e7eb" />
+                <PolarAngleAxis 
+                  dataKey="domain" 
+                  tick={{ fill: '#6b7280', fontSize: 12 }}
                 />
-                <span className="text-muted-foreground truncate">
-                  {item.domaine}
-                </span>
-              </div>
-            ))}
+                <PolarRadiusAxis 
+                  angle={90} 
+                  domain={[0, 100]}
+                  tick={{ fill: '#6b7280', fontSize: 10 }}
+                />
+                <Radar
+                  name="Score"
+                  dataKey="score"
+                  stroke="#8b5cf6"
+                  fill="#8b5cf6"
+                  fillOpacity={0.6}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
-        )}
+
+          {/* Statistiques */}
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Moyenne</p>
+              <p className="text-2xl font-bold text-purple-600">{moyenneGlobale}%</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Point fort</p>
+              <p className="text-sm font-semibold">
+                {maxDomain.domain ? DOMAINES_LABELS[maxDomain.domain] : '-'}
+              </p>
+              <p className="text-lg font-bold text-green-600">{maxDomain.score}%</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">À améliorer</p>
+              <p className="text-sm font-semibold">
+                {minDomain.domain && minDomain.score < 100 ? DOMAINES_LABELS[minDomain.domain] : '-'}
+              </p>
+              {minDomain.score < 100 && (
+                <p className="text-lg font-bold text-orange-600">{minDomain.score}%</p>
+              )}
+            </div>
+          </div>
+
+          {/* Légende des domaines */}
+          <div className="pt-4 border-t">
+            <p className="text-sm font-medium mb-2">Détail par domaine</p>
+            <div className="space-y-1">
+              {Object.entries(domainesScores).map(([domain, score]) => (
+                <div key={domain} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {DOMAINES_LABELS[domain]}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-purple-500 rounded-full transition-all duration-300"
+                        style={{ width: `${score}%` }}
+                      />
+                    </div>
+                    <span className="font-medium w-12 text-right">{score}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 }
-
-export default RadarCompetences;

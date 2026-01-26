@@ -1,26 +1,11 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextRequest, NextResponse } from 'next/server';
 
-const protectedTeacherRoutes = ['/enseignant'];
-const protectedStudentRoutes = ['/dashboard'];
-
+/**
+ * Proxy middleware pour Next.js
+ * 
+ * Note: La protection des routes est gérée côté client par le composant ProtectedRoute
+ * Ce proxy laisse passer toutes les requêtes pour éviter les conflits avec l'authentification PocketBase
+ */
 export async function proxy(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-  const { pathname } = request.nextUrl;
-
-  // Protection enseignant
-  if (protectedTeacherRoutes.some((route) => pathname.startsWith(route))) {
-    if (!token || token.role !== 'teacher') {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  // Protection élève
-  if (protectedStudentRoutes.some((route) => pathname.startsWith(route))) {
-    if (!token || token.role !== 'student') {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
   return NextResponse.next();
 }

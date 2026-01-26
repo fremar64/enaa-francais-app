@@ -17,31 +17,60 @@ import {
 export class CassService {
   private client: AxiosInstance;
   private frameworkId: string;
+  private token: string | null = null;
+  private username: string;
+  private password: string;
+  private apiUrl: string;
 
   constructor(
-    apiUrl: string = process.env.NEXT_PUBLIC_CASS_API_URL || 'https://cass.ceredis.net/api',
-    apiKey: string = process.env.NEXT_PUBLIC_CASS_API_KEY || '',
+    apiUrl: string = process.env.CASS_URL || 'https://cass.ceredis.net',
+    username: string = process.env.CASS_USERNAME || '',
+    password: string = process.env.CASS_PASSWORD || '',
     frameworkId: string = process.env.NEXT_PUBLIC_CASS_FRAMEWORK_ID || ''
   ) {
+    this.apiUrl = apiUrl.replace(/\/$/, '');
+    this.username = username;
+    this.password = password;
     this.frameworkId = frameworkId;
-    
     this.client = axios.create({
-      baseURL: apiUrl,
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
+      baseURL: this.apiUrl,
       timeout: 10000
     });
+  }
+
+  /**
+   * Authentifier et stocker le JWT
+   */
+  private async authenticate(): Promise<void> {
+    if (this.token) return;
+    try {
+      const res = await axios.post(`${this.apiUrl}/login`, {
+        username: this.username,
+        password: this.password
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.data && res.data.token) {
+        this.token = res.data.token;
+      } else if (res.data && res.data.jwt) {
+        this.token = res.data.jwt;
+      } else {
+        throw new Error('Token JWT non reçu lors du login CaSS');
+      }
+    } catch (error: any) {
+      throw new Error(`CaSS login failed: ${error.response?.status} ${JSON.stringify(error.response?.data || error.message)}`);
+    }
   }
 
   /**
    * Récupérer toutes les compétences du framework CEREDIS
    */
   async getFrameworkCompetencies(): Promise<any[]> {
+    await this.authenticate();
     try {
       const response = await this.client.get(
-        `/framework/${this.frameworkId}/competency`
+        `/api/framework/${this.frameworkId}/competency`,
+        { headers: { Authorization: `Bearer ${this.token}` } }
       );
       return response.data;
     } catch (error) {
@@ -54,8 +83,10 @@ export class CassService {
    * Récupérer une compétence spécifique par son ID
    */
   async getCompetency(competencyId: string): Promise<any> {
+    await this.authenticate();
     try {
-      const response = await this.client.get(`/competency/${competencyId}`);
+      const response = await this.client.get(`/api/competency/${competencyId}`,
+        { headers: { Authorization: `Bearer ${this.token}` } });
       return response.data;
     } catch (error) {
       console.error(`[CaSS] Erreur récupération compétence ${competencyId}:`, error);
@@ -108,14 +139,12 @@ export class CassService {
     score?: number;
     maxScore?: number;
   }): Promise<CassAssertion | null> {
+    await this.authenticate();
     try {
       // Calculer le confidence basé sur le score si disponible
       let confidence = data.confidence;
       if (data.score !== undefined && data.maxScore !== undefined) {
         const scoreRatio = data.score / data.maxScore;
-        // Ajuster la confiance: 
-        // - 100% = 1.0, 90% = 0.9, 80% = 0.8, etc.
-        // - En dessous de 60% = pas d'assertion
         if (scoreRatio < 0.6) {
           console.log(`[CaSS] Score insuffisant (${scoreRatio * 100}%) pour créer une assertion`);
           return null;
@@ -134,13 +163,15 @@ export class CassService {
         assertedDate: new Date().toISOString()
       };
 
-      const response = await this.client.post('/assertion', assertion);
-      
+      const response = await this.client.post('/api/assertion', assertion, {
+        headers: { Authorization: `Bearer ${this.token}` }
+      });
+
       console.log(`[CaSS] ✅ Assertion créée pour compétence ${data.competencyId}`, {
         userId: data.userId,
         confidence: confidence.toFixed(2)
       });
-      
+
       return response.data;
     } catch (error: any) {
       console.error('[CaSS] Erreur création assertion:', error.response?.data || error.message);
@@ -206,9 +237,11 @@ export class CassService {
    * Récupérer toutes les assertions d'un apprenant
    */
   async getUserAssertions(userId: string): Promise<CassAssertion[]> {
+    await this.authenticate();
     try {
       const response = await this.client.get(
-        `/assertion/search?subject=${userId}`
+        `/api/assertion/search?subject=${userId}`,
+        { headers: { Authorization: `Bearer ${this.token}` } }
       );
       return response.data;
     } catch (error) {
@@ -224,9 +257,11 @@ export class CassService {
     userId: string,
     competencyId: string
   ): Promise<CassAssertion[]> {
+    await this.authenticate();
     try {
       const response = await this.client.get(
-        `/assertion/search?subject=${userId}&competency=${competencyId}`
+        `/api/assertion/search?subject=${userId}&competency=${competencyId}`,
+        { headers: { Authorization: `Bearer ${this.token}` } }
       );
       return response.data;
     } catch (error) {
@@ -319,7 +354,8 @@ export class CassService {
    */
   async testConnection(): Promise<boolean> {
     try {
-      await this.client.get('/framework');
+      await this.authenticate();
+      await this.client.get('/api/framework', { headers: { Authorization: `Bearer ${this.token}` } });
       console.log('[CaSS] ✅ Connexion réussie');
       return true;
     } catch (error) {

@@ -10,6 +10,7 @@ import { getCassClient } from '@/lib/cass-client';
 import type { ActivityCompletionData } from '@/services/integration-unified/integration.unified';
 import { MAPPING_ACTIVITES_COMPETENCES } from '@/services/integration/types';
 import type { NiveauCECRL } from '@/services/integration/types';
+import { sendSlackAlert } from '@/services/monitoring/alert.service';
 
 /**
  * Vérifier si une activité peut valider des compétences du Domaine 5 (métalinguistique)
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     // ========================================
     // 1. xAPI : Créer statement "completed"
     // ========================================
-    if (process.env.NEXT_PUBLIC_LRS_ENDPOINT) {
+    if (process.env.XAPI_LRS_URL) {
       try {
         const statement = {
           actor: {
@@ -126,9 +127,9 @@ export async function POST(request: NextRequest) {
         };
 
         // Envoyer à LRS Ralph
-        const lrsUsername = process.env.NEXT_PUBLIC_LRS_USERNAME;
-        const lrsPassword = process.env.NEXT_PUBLIC_LRS_PASSWORD;
-        const lrsEndpoint = process.env.NEXT_PUBLIC_LRS_ENDPOINT;
+        const lrsUsername = process.env.XAPI_LRS_USERNAME;
+        const lrsPassword = process.env.XAPI_LRS_PASSWORD;
+        const lrsEndpoint = process.env.XAPI_LRS_URL;
 
         if (lrsUsername && lrsPassword && lrsEndpoint) {
           const auth = Buffer.from(`${lrsUsername}:${lrsPassword}`).toString('base64');
@@ -152,6 +153,9 @@ export async function POST(request: NextRequest) {
       } catch (error: any) {
         result.errors.push(`xAPI: ${error.message}`);
         console.error('[API] xAPI error:', error);
+        await sendSlackAlert(
+          `[TRACKING ERROR][xAPI] ${error.message}\nUser: ${data?.userId || 'unknown'} | Activity: ${data?.activityType}\n${error.stack || ''}`
+        );
       }
     }
 
@@ -205,7 +209,7 @@ export async function POST(request: NextRequest) {
             result.cassAssertions.push(created);
             
             // Créer un statement xAPI "mastered" pour cette compétence
-            if (process.env.NEXT_PUBLIC_LRS_ENDPOINT) {
+            if (process.env.XAPI_LRS_URL) {
               const masteredStatement = {
                 actor: {
                   objectType: 'Agent',
@@ -239,11 +243,11 @@ export async function POST(request: NextRequest) {
                 },
               };
 
-              const lrsUsername = process.env.NEXT_PUBLIC_LRS_USERNAME;
-              const lrsPassword = process.env.NEXT_PUBLIC_LRS_PASSWORD;
-              const lrsEndpoint = process.env.NEXT_PUBLIC_LRS_ENDPOINT;
+              const lrsUsername = process.env.XAPI_LRS_USERNAME;
+              const lrsPassword = process.env.XAPI_LRS_PASSWORD;
+              const lrsEndpoint = process.env.XAPI_LRS_URL;
 
-              if (lrsUsername && lrsPassword) {
+              if (lrsUsername && lrsPassword && lrsEndpoint) {
                 const auth = Buffer.from(`${lrsUsername}:${lrsPassword}`).toString('base64');
                 
                 await fetch(`${lrsEndpoint}/statements`, {
@@ -262,6 +266,9 @@ export async function POST(request: NextRequest) {
           } catch (error: any) {
             result.errors.push(`CaSS assertion ${compId}: ${error.message}`);
             console.error(`[API] CaSS assertion error for ${compId}:`, error);
+            await sendSlackAlert(
+              `[TRACKING ERROR][CaSS assertion] ${error.message}\nComp: ${compId} | User: ${data?.userId || 'unknown'} | Activity: ${data?.activityType}\n${error.stack || ''}`
+            );
           }
         }
 
@@ -269,6 +276,9 @@ export async function POST(request: NextRequest) {
       } catch (error: any) {
         result.errors.push(`CaSS: ${error.message}`);
         console.error('[API] CaSS error:', error);
+        await sendSlackAlert(
+          `[TRACKING ERROR][CaSS] ${error.message}\nUser: ${data?.userId || 'unknown'} | Activity: ${data?.activityType}\n${error.stack || ''}`
+        );
       }
     }
 

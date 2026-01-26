@@ -1,0 +1,280 @@
+[
+  {
+    "type": "qcm",
+    "status": "success",
+    "statusCode": 200,
+    "data": {
+      "success": false,
+      "xapiStatements": [
+        {
+          "actor": {
+            "objectType": "Agent",
+            "name": "Test Ceredis",
+            "account": {
+              "homePage": "https://enaa-chansons.ceredis.net",
+              "name": "test-user-ceredis"
+            }
+          },
+          "verb": {
+            "id": "http://adlnet.gov/expapi/verbs/completed",
+            "display": {
+              "en-US": "completed"
+            }
+          },
+          "object": {
+            "objectType": "Activity",
+            "id": "undefined/activity/act-qcm-001",
+            "definition": {
+              "name": {
+                "fr-FR": "QCM Synonymes"
+              },
+              "type": "http://adlnet.gov/expapi/activities/assessment"
+            }
+          },
+          "result": {
+            "score": {
+              "min": 0,
+              "max": 1,
+              "raw": 1,
+              "scaled": 1
+            },
+            "success": true,
+            "duration": "PT30S",
+            "completion": true
+          },
+          "context": {
+            "contextActivities": {
+              "parent": [
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/chanson/chanson-001"
+                },
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/seance/seance-001"
+                }
+              ]
+            },
+            "extensions": {
+              "https://ceredis.net/xapi/extensions/activityType": "qcm",
+              "https://ceredis.net/xapi/extensions/niveau": "A2"
+            }
+          }
+        }
+      ],
+      "cassAssertions": [],
+      "errors": [
+        "CaSS assertion 1.1: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec7fb944e1fc',t:'MTc2ODk5OTY4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\"",
+        "CaSS assertion 2.1: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec84db8fe1fc',t:'MTc2ODk5OTY4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\""
+      ]
+    }
+  },
+  {
+    "type": "texte_libre",
+    "status": "success",
+    "statusCode": 200,
+    "data": {
+      "success": false,
+      "xapiStatements": [
+        {
+          "actor": {
+            "objectType": "Agent",
+            "name": "Test Ceredis",
+            "account": {
+              "homePage": "https://enaa-chansons.ceredis.net",
+              "name": "test-user-ceredis"
+            }
+          },
+          "verb": {
+            "id": "http://adlnet.gov/expapi/verbs/completed",
+            "display": {
+              "en-US": "completed"
+            }
+          },
+          "object": {
+            "objectType": "Activity",
+            "id": "undefined/activity/act-txtlibre-001",
+            "definition": {
+              "name": {
+                "fr-FR": "Texte libre sur la chanson"
+              },
+              "type": "http://adlnet.gov/expapi/activities/assessment"
+            }
+          },
+          "result": {
+            "score": {
+              "min": 0,
+              "max": 2,
+              "raw": 2,
+              "scaled": 1
+            },
+            "success": true,
+            "duration": "PT120S",
+            "completion": true
+          },
+          "context": {
+            "contextActivities": {
+              "parent": [
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/chanson/chanson-001"
+                },
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/seance/seance-001"
+                }
+              ]
+            },
+            "extensions": {
+              "https://ceredis.net/xapi/extensions/activityType": "texte_libre",
+              "https://ceredis.net/xapi/extensions/niveau": "A2"
+            }
+          }
+        }
+      ],
+      "cassAssertions": [],
+      "errors": [
+        "CaSS assertion 3.1: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec8aae94e1fc',t:'MTc2ODk5OTY4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\"",
+        "CaSS assertion 5.5: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec8d4c93e1fc',t:'MTc2ODk5OTY4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\"",
+        "CaSS assertion 5.6: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec9029bfe1fc',t:'MTc2ODk5OTY4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\"",
+        "CaSS assertion 5.7: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec930fc1e1fc',t:'MTc2ODk5OTY4OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\""
+      ]
+    }
+  },
+  {
+    "type": "journal_reflexif",
+    "status": "success",
+    "statusCode": 200,
+    "data": {
+      "success": false,
+      "xapiStatements": [
+        {
+          "actor": {
+            "objectType": "Agent",
+            "name": "Test Ceredis",
+            "account": {
+              "homePage": "https://enaa-chansons.ceredis.net",
+              "name": "test-user-ceredis"
+            }
+          },
+          "verb": {
+            "id": "http://adlnet.gov/expapi/verbs/completed",
+            "display": {
+              "en-US": "completed"
+            }
+          },
+          "object": {
+            "objectType": "Activity",
+            "id": "undefined/activity/act-journal-001",
+            "definition": {
+              "name": {
+                "fr-FR": "Journal réflexif"
+              },
+              "type": "http://adlnet.gov/expapi/activities/assessment"
+            }
+          },
+          "result": {
+            "score": {
+              "min": 0,
+              "max": 1,
+              "raw": 1,
+              "scaled": 1
+            },
+            "success": true,
+            "duration": "PT60S",
+            "completion": true
+          },
+          "context": {
+            "contextActivities": {
+              "parent": [
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/chanson/chanson-001"
+                },
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/seance/seance-001"
+                }
+              ]
+            },
+            "extensions": {
+              "https://ceredis.net/xapi/extensions/activityType": "journal_reflexif",
+              "https://ceredis.net/xapi/extensions/niveau": "A2"
+            }
+          }
+        }
+      ],
+      "cassAssertions": [],
+      "errors": [
+        "CaSS assertion 5.6: CaSS login failed: 404 \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n<meta charset=\\\"utf-8\\\">\\n<title>Error</title>\\n</head>\\n<body>\\n<pre>Cannot POST /api/login</pre>\\n<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML=\\\"window.__CF$cv$params={r:'9c16ec99ad89e1fc',t:'MTc2ODk5OTY4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);\\\";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>\\n</html>\\n\""
+      ]
+    }
+  },
+  {
+    "type": "ecoute",
+    "status": "success",
+    "statusCode": 200,
+    "data": {
+      "success": true,
+      "xapiStatements": [
+        {
+          "actor": {
+            "objectType": "Agent",
+            "name": "Test Ceredis",
+            "account": {
+              "homePage": "https://enaa-chansons.ceredis.net",
+              "name": "test-user-ceredis"
+            }
+          },
+          "verb": {
+            "id": "http://adlnet.gov/expapi/verbs/completed",
+            "display": {
+              "en-US": "completed"
+            }
+          },
+          "object": {
+            "objectType": "Activity",
+            "id": "undefined/activity/act-ecoute-001",
+            "definition": {
+              "name": {
+                "fr-FR": "Écoute de la chanson"
+              },
+              "type": "http://adlnet.gov/expapi/activities/assessment"
+            }
+          },
+          "result": {
+            "score": {
+              "min": 0,
+              "max": 1,
+              "raw": 1,
+              "scaled": 1
+            },
+            "success": true,
+            "duration": "PT120S",
+            "completion": true
+          },
+          "context": {
+            "contextActivities": {
+              "parent": [
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/chanson/chanson-001"
+                },
+                {
+                  "objectType": "Activity",
+                  "id": "undefined/seance/seance-001"
+                }
+              ]
+            },
+            "extensions": {
+              "https://ceredis.net/xapi/extensions/activityType": "ecoute",
+              "https://ceredis.net/xapi/extensions/niveau": "A2"
+            }
+          }
+        }
+      ],
+      "cassAssertions": [],
+      "errors": []
+    }
+  }
+]

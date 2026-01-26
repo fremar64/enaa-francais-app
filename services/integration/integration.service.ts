@@ -95,15 +95,15 @@ export class IntegrationService {
     
     // Désactiver si les clés ne sont pas configurées
     this.enabled = {
-      cass: !!process.env.NEXT_PUBLIC_CASS_API_KEY,
-      xapi: !!(process.env.NEXT_PUBLIC_LRS_USERNAME && process.env.NEXT_PUBLIC_LRS_PASSWORD)
+      cass: !!(process.env.CASS_URL && process.env.CASS_USERNAME && process.env.CASS_PASSWORD),
+      xapi: !!(process.env.XAPI_LRS_URL && process.env.XAPI_LRS_USERNAME && process.env.XAPI_LRS_PASSWORD)
     };
 
     if (!this.enabled.cass) {
-      console.warn('[Integration] CaSS désactivé (clé API manquante)');
+      console.warn('[Integration] CaSS désactivé (credentials manquants : CASS_URL, CASS_USERNAME, CASS_PASSWORD)');
     }
     if (!this.enabled.xapi) {
-      console.warn('[Integration] xAPI désactivé (credentials LRS manquants)');
+      console.warn('[Integration] xAPI désactivé (credentials LRS manquants : XAPI_LRS_URL, XAPI_LRS_USERNAME, XAPI_LRS_PASSWORD)');
     }
   }
 

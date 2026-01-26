@@ -1,10 +1,8 @@
 "use client";
 
-
-
-
 import { useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -12,32 +10,117 @@ import { Label } from '../../components/ui/label';
 import Link from 'next/link';
 import { Loader2, Mail, Lock, Music, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
+import { pb } from '@/lib/pocketbase';
 
 
 function LoginForm() {
   const router = useRouter();
+  const { login, loginWithProvider, isLoading: authLoading, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
+
+  // DÉSACTIVÉ : cause des boucles avec ProtectedRoute
+  // Rediriger automatiquement si déjà connecté
+  // useEffect(() => {
+  //   console.log('🔍 [LoginPage] Vérification auth:', { isAuthenticated, authLoading, user: !!user });
+  //   if (!authLoading && isAuthenticated && user) {
+  //     console.log('✅ [LoginPage] Utilisateur déjà connecté, redirection vers /dashboard...');
+  //     window.location.href = '/dashboard';
+  //   }
+  // }, [isAuthenticated, authLoading, user]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    console.log('=== DÉBUT TENTATIVE DE CONNEXION ===');
+    console.log('Email:', email);
+    console.log('Password length:', password?.length || 0);
+    
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
-    // TODO: Ajouter la logique d'authentification ici
-    setIsLoading(false);
+    setDebugInfo('Connexion en cours...');
+    
+    try {
+      console.log('Appel de la fonction login...');
+      await login(email, password);
+      console.log('✅ Login réussi !');
+      setDebugInfo('Connexion réussie, vérification...');
+      
+      // Vérifier que PocketBase a bien enregistré l'authentification
+      console.log('Vérification pb.authStore.isValid:', pb.authStore.isValid);
+      console.log('pb.authStore.token:', pb.authStore.token ? 'présent' : 'absent');
+      console.log('pb.authStore.model:', pb.authStore.model ? 'présent' : 'absent');
+      
+      if (!pb.authStore.isValid) {
+        console.error('⚠️ pb.authStore n\'est pas valide après login !');
+        setError('Erreur: L\'authentification n\'a pas été correctement enregistrée');
+        setDebugInfo('pb.authStore.isValid = false');
+        return;
+      }
+      
+      // Attendre un court instant pour laisser React mettre à jour l'état
+      console.log('Attente de la mise à jour de l\'état React...');
+      setDebugInfo('Auth OK, mise à jour de l\'interface...');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      console.log('Redirection vers /dashboard avec window.location.href...');
+      setDebugInfo('Redirection en cours...');
+      
+      // Utiliser window.location.href pour forcer un rechargement complet
+      // Cela garantit que le serveur et React Context se synchronisent
+      window.location.href = '/dashboard';
+    } catch (err: any) {
+      console.error('❌ Erreur de connexion:', err);
+      console.error('Type:', typeof err);
+      console.error('err.message:', err.message);
+      console.error('err.data:', err.data);
+      console.error('err.status:', err.status);
+      
+      let errorMessage = 'Email ou mot de passe incorrect';
+      
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.data?.message) {
+        errorMessage = err.data.message;
+      } else if (err.status === 400) {
+        errorMessage = 'Email ou mot de passe incorrect';
+      } else if (err.status === 403) {
+        errorMessage = 'Accès refusé. Votre compte n\'est peut-être pas validé.';
+      }
+      
+      setError(errorMessage);
+      setDebugInfo(`Erreur: ${JSON.stringify({ 
+        message: err.message, 
+        status: err.status,
+        data: err.data 
+      })}`);
+    } finally {
+      setIsLoading(false);
+      console.log('=== FIN TENTATIVE DE CONNEXION ===');
+    }
   };
 
   const handleOAuthLogin = async (provider: 'google' | 'github' | 'discord') => {
     setError(null);
     setIsLoading(true);
     try {
-      // TODO: Ajouter la logique OAuth ici
-      setIsLoading(false);
+      await loginWithProvider(provider);
+      // Attendre et vérifier authStore pour OAuth aussi
+      await new Promise(resolve => setTimeout(resolve, 300));
+      window.location.href = '/dashboard';
     } catch (err) {
-      setIsLoading(false);
+      console.error(`Erreur OAuth ${provider}:`, err);
       setError(`Erreur de connexion avec ${provider}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,6 +145,12 @@ function LoginForm() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
+            )}
+            {debugInfo && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md text-xs">
+                <strong className="text-blue-800 dark:text-blue-200">Debug:</strong>
+                <pre className="mt-1 text-blue-700 dark:text-blue-300 whitespace-pre-wrap break-words">{debugInfo}</pre>
+              </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

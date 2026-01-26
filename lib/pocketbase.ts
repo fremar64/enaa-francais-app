@@ -17,6 +17,8 @@ export interface User {
   };
   created: string;
   updated: string;
+  role?: 'student' | 'teacher' | 'admin';
+  isValidated?: boolean;
 }
 
 export interface Chanson {
@@ -188,34 +190,61 @@ export const register = async (
   username: string,
   name: string,
   niveau: User['niveau_actuel'] = 'A2',
-  langueMaternelle: string = 'en'
+  langueMaternelle: string = 'en',
+  role: 'student' | 'teacher' | 'admin' = 'student'
 ): Promise<User> => {
-  const user = await pb.collection('users').create<User>({
+  // Si on tente de créer un admin, vérifier qu'il n'en existe pas déjà
+  if (role === 'admin') {
+    const existingAdmins = await pb.collection('users').getList<User>(1, 1, {
+      filter: 'role = "admin"',
+    });
+    if (existingAdmins.items.length > 0) {
+      throw new Error("Un compte administrateur existe déjà. Impossible d'en créer un second.");
+    }
+  }
+  // Préparer les données selon le rôle
+  const userData: any = {
     email,
     password,
     passwordConfirm,
     username,
     name,
-    niveau_actuel: niveau,
-    langue_maternelle: langueMaternelle,
+    role,
     preferences: {
       theme: 'system',
       volume: 80,
       vitesse_lecture: 1,
       afficher_traduction: true,
     },
-  });
-  
+  };
+  if (role === 'student') {
+    userData.niveau_actuel = niveau;
+    userData.langue_maternelle = langueMaternelle;
+  }
+  console.log('Données envoyées à PocketBase pour création user:', userData);
+  const user = await pb.collection('users').create<User>(userData);
   // Connexion automatique après inscription
-  await pb.collection('users').authWithPassword(email, password);
-  
-  return user;
+  const authData = await pb.collection('users').authWithPassword<User>(email, password);
+  // Récupérer l'utilisateur complet (avec champs personnalisés)
+  try {
+    const full = await pb.collection('users').getOne<User>(authData.record.id);
+    return full;
+  } catch {
+    return authData.record;
+  }
 };
 
 // Helper pour la connexion
 export const login = async (email: string, password: string): Promise<User> => {
+  // PocketBase accepte une identité (email ou username) en première position
   const authData = await pb.collection('users').authWithPassword<User>(email, password);
-  return authData.record;
+  // Récupérer l'utilisateur complet pour s'assurer d'avoir les champs custom (role, isValidated...)
+  try {
+    const full = await pb.collection('users').getOne<User>(authData.record.id);
+    return full;
+  } catch {
+    return authData.record;
+  }
 };
 
 // Helper pour la connexion OAuth2
@@ -230,7 +259,13 @@ export const refreshAuth = async (): Promise<User | null> => {
   
   try {
     const authData = await pb.collection('users').authRefresh<User>();
-    return authData.record;
+    // Récupérer le profil complet après refresh
+    try {
+      const full = await pb.collection('users').getOne<User>(authData.record.id);
+      return full;
+    } catch {
+      return authData.record;
+    }
   } catch {
     pb.authStore.clear();
     return null;
@@ -401,40 +436,6 @@ export const createOrUpdateProgression = async (
   });
 };
 
-// Fonctions pour les réponses
-export const saveReponse = async (
-  userId: string,
-  seanceId: string,
-  ecranId: string,
-  activiteId: string,
-  reponseDonnee: unknown,
-  reponseCorrecte: unknown,
-  estCorrect: boolean,
-  score: number,
-  tempsReponse: number,
-  tentative: number
-): Promise<Reponse> => {
-  return await pb.collection('reponses').create<Reponse>({
-    user: userId,
-    seance: seanceId,
-    ecran_id: ecranId,
-    activite_id: activiteId,
-    reponse_donnee: reponseDonnee,
-    reponse_correcte: reponseCorrecte,
-    est_correct: estCorrect,
-    score,
-    temps_reponse: tempsReponse,
-    tentative,
-  });
-};
-
-export const getReponsesBySeance = async (userId: string, seanceId: string): Promise<Reponse[]> => {
-  const result = await pb.collection('reponses').getList<Reponse>(1, 500, {
-    filter: `user = "${userId}" && seance = "${seanceId}"`,
-    sort: 'created',
-  });
-  return result.items;
-};
 
 // Fonctions pour les compétences
 export const getCompetences = async (): Promise<Competence[]> => {

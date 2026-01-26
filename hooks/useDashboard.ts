@@ -1,325 +1,206 @@
-/**
- * Hook useDashboard
- * Récupère et agrège les données pour le Dashboard Apprenant
- * Combine les données de CaSS (compétences) et xAPI (activités)
- */
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { integrationService } from '@/services/integration';
-import { COMPETENCES_CEREDIS } from '@/services/integration/types';
-import type { 
-  DashboardData, 
-  ProgressionGlobale, 
-  ProfilCompetences, 
-  CompetenceDomaine,
-  CompetenceDetail,
-  ActiviteHistorique,
-  DonneesRadar,
-  DOMAINES_CEREDIS 
-} from '@/types/dashboard';
+import { pb } from '@/lib/pocketbase';
 
-// Données de domaines pour le mapping
-const DOMAINES = [
-  { id: '1', name: 'Compréhension orale', abbrev: 'CO', couleur: '#3B82F6', competencesIds: ['1.1', '1.2', '1.3'] },
-  { id: '2', name: 'Compréhension écrite', abbrev: 'CE', couleur: '#10B981', competencesIds: ['2.1', '2.2', '2.3'] },
-  { id: '3', name: 'Production écrite', abbrev: 'PE', couleur: '#F59E0B', competencesIds: ['3.1', '3.2', '3.3'] },
-  { id: '4', name: 'Interaction', abbrev: 'INT', couleur: '#EF4444', competencesIds: ['4.1', '4.2', '4.3'] },
-  { id: '5', name: 'Métalinguistique', abbrev: 'META', couleur: '#8B5CF6', competencesIds: ['5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7'] }
-];
-
-/**
- * Données de démonstration pour le développement
- * Note: Utiliser des dates fixes pour éviter les problèmes d'hydratation SSR
- */
-const MOCK_HISTORIQUE: ActiviteHistorique[] = [
-  {
-    id: 'act-1',
-    nom: 'QCM Compréhension - Là-bas',
-    type: 'qcm',
-    chanson: 'Là-bas',
-    seance: 'Séance 1 - Découverte',
-    score: 85,
-    duree: 180,
-    date: '2026-01-13T10:00:00.000Z',
-    competences: ['1.1', '2.1'],
-    feedback: 'succes'
-  },
-  {
-    id: 'act-2',
-    nom: 'Texte à trous - Conjugaison',
-    type: 'texte_trous',
-    chanson: 'Là-bas',
-    seance: 'Séance 2 - Analyse',
-    score: 70,
-    duree: 240,
-    date: '2026-01-13T08:00:00.000Z',
-    competences: ['5.1', '5.3'],
-    feedback: 'partiel'
-  },
-  {
-    id: 'act-3',
-    nom: 'Journal réflexif',
-    type: 'journal_reflexif',
-    chanson: 'Là-bas',
-    seance: 'Séance 3 - Réflexion',
-    score: 90,
-    duree: 300,
-    date: '2026-01-12T14:00:00.000Z',
-    competences: ['5.6'],
-    feedback: 'succes'
-  },
-  {
-    id: 'act-4',
-    nom: 'Production écrite libre',
-    type: 'texte_libre',
-    chanson: 'Né en 17 à Leidenstadt',
-    seance: 'Séance 1 - Expression',
-    score: 75,
-    duree: 420,
-    date: '2026-01-11T16:00:00.000Z',
-    competences: ['3.1', '5.5', '5.7'],
-    feedback: 'partiel'
-  }
-];
-
-/**
- * Créer des données de compétences simulées (déterministe pour SSR)
- * Utilise l'index de la compétence pour générer des valeurs cohérentes
- */
-function createMockCompetenceDetails(): CompetenceDetail[] {
-  const details: CompetenceDetail[] = [];
-  
-  // Générateur pseudo-aléatoire déterministe basé sur seed
-  const seededRandom = (seed: number) => {
-    const x = Math.sin(seed * 9999) * 10000;
-    return x - Math.floor(x);
-  };
-  
-  Object.entries(COMPETENCES_CEREDIS).forEach(([id, comp], index) => {
-    // Utiliser l'index comme seed pour des valeurs déterministes
-    const random = seededRandom(index + 1);
-    let statut: 'non_commence' | 'en_cours' | 'maitrise';
-    let score: number;
-    let preuves: number;
-    let confidence: number;
-    
-    if (random > 0.7) {
-      statut = 'maitrise';
-      score = 75 + Math.floor(seededRandom(index + 10) * 25);
-      preuves = 2 + Math.floor(seededRandom(index + 20) * 3);
-      confidence = 0.8 + seededRandom(index + 30) * 0.2;
-    } else if (random > 0.3) {
-      statut = 'en_cours';
-      score = 40 + Math.floor(seededRandom(index + 40) * 35);
-      preuves = 1 + Math.floor(seededRandom(index + 50) * 2);
-      confidence = 0.4 + seededRandom(index + 60) * 0.4;
-    } else {
-      statut = 'non_commence';
-      score = 0;
-      preuves = 0;
-      confidence = 0;
-    }
-    
-    details.push({
-      id,
-      code: comp.code,
-      name: comp.name,
-      description: comp.description,
-      domaineId: comp.domain,
-      niveau: comp.level,
-      statut,
-      score,
-      preuves,
-      confidence,
-      derniereEvaluation: statut !== 'non_commence' 
-        ? '2026-01-10T12:00:00.000Z'
-        : null
-    });
-  });
-  
-  return details;
+export interface DashboardStats {
+  seancesTerminees: number;
+  seancesEnCours: number;
+  scoreMoyen: number;
+  tempsTotal: number;
+  scoreCeredis: number | null;
+  niveauCecrl: string | null;
+  domainesScores: Record<string, number>;
+  dernieresActivites: Array<{
+    id: string;
+    titre: string;
+    parcours: string;
+    score: number;
+    date: string;
+    type: string;
+    statut: 'termine' | 'en_cours';
+  }>;
+  tendance: 'up' | 'down' | 'stable';
+  isLoading: boolean;
+  error: string | null;
 }
 
-/**
- * Calculer les données par domaine depuis les détails
- */
-function calculateDomaineData(details: CompetenceDetail[]): CompetenceDomaine[] {
-  return DOMAINES.map(domaine => {
-    const competencesDomaine = details.filter(c => c.domaineId === domaine.id);
-    const maitrisees = competencesDomaine.filter(c => c.statut === 'maitrise').length;
-    const scores = competencesDomaine.filter(c => c.score > 0).map(c => c.score);
-    const scoreMoyen = scores.length > 0 
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : 0;
-    
-    // Déterminer le niveau atteint
-    const niveauxAtteints = competencesDomaine
-      .filter(c => c.statut === 'maitrise')
-      .map(c => c.niveau);
-    
-    const niveauAtteint = niveauxAtteints.length > 0
-      ? niveauxAtteints.sort()[niveauxAtteints.length - 1]
-      : null;
-    
-    return {
-      domaineId: domaine.id,
-      domaineName: domaine.name,
-      competencesMaitrisees: maitrisees,
-      competencesTotal: competencesDomaine.length,
-      scoreMoyen,
-      niveauAtteint
-    };
-  });
-}
-
-/**
- * Générer les données du radar
- */
-function generateRadarData(parDomaine: CompetenceDomaine[]): DonneesRadar[] {
-  return parDomaine.map((domaine, index) => ({
-    domaine: domaine.domaineName,
-    abbrev: DOMAINES[index].abbrev,
-    score: domaine.scoreMoyen,
-    scoreMax: 100,
-    couleur: DOMAINES[index].couleur
-  }));
-}
-
-/**
- * Hook principal pour le Dashboard
- */
-export function useDashboard(): DashboardData & { refresh: () => void } {
+export function useDashboard(): DashboardStats {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<Omit<DashboardData, 'loading' | 'error'>>({
-    progression: {
-      activitesCompletees: 0,
-      seancesTerminees: 0,
-      chansonsEtudiees: 0,
-      tempsTotal: 0,
-      scoreMoyen: 0,
-      scoreGlobal: 0,
-      serieJours: 0,
-      derniereActivite: null,
-      niveauActuel: 'A1',
-      competencesMaitrisees: 0,
-      competencesTotales: 19
+  const [stats, setStats] = useState<DashboardStats>({
+    seancesTerminees: 0,
+    seancesEnCours: 0,
+    scoreMoyen: 0,
+    tempsTotal: 0,
+    scoreCeredis: null,
+    niveauCecrl: null,
+    domainesScores: {
+      'D1': 0,
+      'D2': 0,
+      'D3': 0,
+      'D4': 0,
+      'D5': 0,
     },
-    competences: {
-      parDomaine: [],
-      details: [],
-      recemmentAcquises: [],
-      enProgression: []
-    },
-    historique: [],
-    radar: []
+    dernieresActivites: [],
+    tendance: 'stable',
+    isLoading: true,
+    error: null,
   });
-
-  const fetchDashboardData = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Essayer de récupérer les vraies données
-      const status = integrationService.getStatus();
-      
-      let realData = null;
-      if (status.cass.enabled || status.xapi.enabled) {
-        try {
-          realData = await integrationService.getUserDashboard(user.id);
-        } catch (e) {
-          console.warn('[Dashboard] Services non disponibles, utilisation données mock');
-        }
-      }
-
-      // Générer les données de compétences
-      const competenceDetails = createMockCompetenceDetails();
-      const parDomaine = calculateDomaineData(competenceDetails);
-      const radar = generateRadarData(parDomaine);
-      
-      // Filtrer les compétences récentes et en cours
-      const recemmentAcquises = competenceDetails
-        .filter(c => c.statut === 'maitrise')
-        .sort((a, b) => {
-          if (!a.derniereEvaluation || !b.derniereEvaluation) return 0;
-          return new Date(b.derniereEvaluation).getTime() - new Date(a.derniereEvaluation).getTime();
-        })
-        .slice(0, 5);
-      
-      const enProgression = competenceDetails
-        .filter(c => c.statut === 'en_cours')
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
-
-      // Calculer la progression globale
-      const totalMaitrisees = competenceDetails.filter(c => c.statut === 'maitrise').length;
-      const totalCompetences = competenceDetails.length;
-      const allScores = competenceDetails.filter(c => c.score > 0).map(c => c.score);
-      const scoreMoyen = allScores.length > 0
-        ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
-        : 0;
-      
-      // Calculer le score global (% de progression)
-      const scoreGlobal = Math.round((totalMaitrisees / totalCompetences) * 100);
-      
-      // Déterminer le niveau actuel basé sur les compétences maîtrisées
-      const niveauxMaitrises = competenceDetails
-        .filter(c => c.statut === 'maitrise')
-        .map(c => c.niveau);
-      const niveauxPossibles: Array<'C2' | 'C1' | 'B2' | 'B1' | 'A2' | 'A1'> = ['C2', 'C1', 'B2', 'B1', 'A2', 'A1'];
-      const niveauActuel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' = niveauxMaitrises.length > 0
-        ? niveauxPossibles.find(n => niveauxMaitrises.includes(n)) || 'A1'
-        : 'A1';
-
-      setData({
-        progression: {
-          activitesCompletees: realData?.xapi.totalCompleted ?? MOCK_HISTORIQUE.length,
-          seancesTerminees: 3,
-          chansonsEtudiees: 2,
-          tempsTotal: realData?.xapi.totalDuration ?? MOCK_HISTORIQUE.reduce((sum, a) => sum + a.duree, 0),
-          scoreMoyen: realData?.xapi.averageScore ?? scoreMoyen,
-          scoreGlobal,
-          serieJours: 4,
-          derniereActivite: MOCK_HISTORIQUE[0]?.date ?? null,
-          niveauActuel,
-          competencesMaitrisees: totalMaitrisees,
-          competencesTotales: totalCompetences
-        },
-        competences: {
-          parDomaine,
-          details: competenceDetails,
-          recemmentAcquises,
-          enProgression
-        },
-        historique: MOCK_HISTORIQUE,
-        radar
-      });
-
-    } catch (err) {
-      console.error('[Dashboard] Erreur:', err);
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) {
+        setStats(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      try {
+        // 1. Charger les progressions
+        const progressions = await pb.collection('progression').getFullList({
+          filter: `user = "${user.id}"`,
+          sort: '-updated',
+          expand: 'seance',
+        });
+
+        // 2. Calculer les statistiques de base
+        const seancesTerminees = progressions.filter(p => p.statut === 'termine').length;
+        const seancesEnCours = progressions.filter(p => p.statut === 'en_cours').length;
+        
+        const progressionsTerminees = progressions.filter(p => p.statut === 'termine');
+        const scoreMoyen = progressionsTerminees.length > 0
+          ? Math.round(
+              progressionsTerminees.reduce((sum, p) => sum + (p.score_total || 0), 0) / 
+              progressionsTerminees.length
+            )
+          : 0;
+
+        const tempsTotal = Math.round(
+          progressions.reduce((sum, p) => sum + (p.temps_passe || 0), 0) / 60
+        );
+
+        // 3. Charger les evidences pour calcul des domaines
+        const evidences = await pb.collection('evidences').getFullList({
+          filter: `user = "${user.id}"`,
+          sort: '-created',
+        });
+
+        // 4. Calculer les scores par domaine
+        const domainesScores: Record<string, number> = {
+          'D1': 0,
+          'D2': 0,
+          'D3': 0,
+          'D4': 0,
+          'D5': 0,
+        };
+
+        // Grouper par domaine et calculer la moyenne
+        const domainGroups: Record<string, number[]> = {
+          'D1': [],
+          'D2': [],
+          'D3': [],
+          'D4': [],
+          'D5': [],
+        };
+
+        evidences.forEach(evidence => {
+          const competenceId = evidence.competency_id;
+          if (!competenceId) return;
+
+          // Extraire le domaine (ex: "1.1" → "D1")
+          const domainNumber = competenceId.split('.')[0];
+          const domainKey = `D${domainNumber}`;
+
+          if (domainKey in domainGroups && evidence.score !== undefined) {
+            domainGroups[domainKey].push(evidence.score);
+          }
+        });
+
+        // Calculer la moyenne pour chaque domaine
+        Object.keys(domainGroups).forEach(domain => {
+          const scores = domainGroups[domain];
+          if (scores.length > 0) {
+            domainesScores[domain] = Math.round(
+              scores.reduce((sum, score) => sum + score, 0) / scores.length
+            );
+          }
+        });
+
+        // 5. Tenter de récupérer le score CEREDIS depuis PostgreSQL ou cache
+        // TODO: Implémenter l'appel à l'API /api/ceredis/calculate
+        let scoreCeredis: number | null = null;
+        let niveauCecrl: string | null = null;
+
+        try {
+          // Calculer un score CEREDIS approximatif basé sur les domaines
+          const domaineScoresArray = Object.values(domainesScores);
+          if (domaineScoresArray.some(score => score > 0)) {
+            const moyenneDomaines = domaineScoresArray.reduce((sum, score) => sum + score, 0) / 5;
+            scoreCeredis = Math.round(moyenneDomaines * 6); // Score sur 600
+
+            // Déterminer le niveau CECRL approximatif
+            if (scoreCeredis >= 500) niveauCecrl = 'C1';
+            else if (scoreCeredis >= 400) niveauCecrl = 'B2';
+            else if (scoreCeredis >= 300) niveauCecrl = 'B1';
+            else if (scoreCeredis >= 200) niveauCecrl = 'A2';
+            else niveauCecrl = 'A1';
+          }
+        } catch (error) {
+          console.error('Erreur lors du calcul du score CEREDIS:', error);
+        }
+
+        // 6. Construire l'historique des activités
+        const dernieresActivites = progressions.slice(0, 10).map(p => {
+          const seance = p.expand?.seance;
+          return {
+            id: p.id,
+            titre: seance?.titre || 'Activité sans titre',
+            parcours: seance?.parcours || 'Parcours inconnu',
+            score: p.score_total || 0,
+            date: p.updated || p.created,
+            type: seance?.type || 'inconnu',
+            statut: p.statut as 'termine' | 'en_cours',
+          };
+        });
+
+        // 7. Calculer la tendance (basée sur les 5 dernières vs 5 précédentes)
+        let tendance: 'up' | 'down' | 'stable' = 'stable';
+        if (progressionsTerminees.length >= 10) {
+          const recent5 = progressionsTerminees.slice(0, 5);
+          const previous5 = progressionsTerminees.slice(5, 10);
+          
+          const recentAvg = recent5.reduce((sum, p) => sum + (p.score_total || 0), 0) / 5;
+          const previousAvg = previous5.reduce((sum, p) => sum + (p.score_total || 0), 0) / 5;
+          
+          if (recentAvg > previousAvg + 5) tendance = 'up';
+          else if (recentAvg < previousAvg - 5) tendance = 'down';
+        }
+
+        // 8. Mettre à jour l'état
+        setStats({
+          seancesTerminees,
+          seancesEnCours,
+          scoreMoyen,
+          tempsTotal,
+          scoreCeredis,
+          niveauCecrl,
+          domainesScores,
+          dernieresActivites,
+          tendance,
+          isLoading: false,
+          error: null,
+        });
+
+      } catch (error) {
+        console.error('Erreur lors du chargement du dashboard:', error);
+        setStats(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Impossible de charger les données du dashboard',
+        }));
+      }
+    };
+
     fetchDashboardData();
-  }, [fetchDashboardData]);
+  }, [user]);
 
-  return {
-    loading,
-    error,
-    ...data,
-    refresh: fetchDashboardData
-  };
+  return stats;
 }
-
-export default useDashboard;

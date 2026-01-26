@@ -1,3 +1,88 @@
+# 2026-01-19 - Dashboard Enseignant (Learning Analytics V1)
+
+2026-01-19 - Lancement validation tracking CEREDIS (xAPI, CaSS, PocketBase)
+
+2026-01-20 - Lancement monitoring & logs tracking CEREDIS
+
+2026-01-20 - Automatisation test tracking & validation alertes
+
+2026-01-20 - Automatisation CI/CD (Github Actions)
+
+2026-01-20 - Déploiement automatique Vercel (CI/CD)
+
+- Ajout du job deploy dans le workflow Github Actions : déploiement automatique sur Vercel après validation des tests.
+- Secrets VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID à configurer dans Github pour activer le déploiement.
+- Pipeline complet : lint, build, tests, tracking, alertes, déploiement.
+
+- Création du workflow .github/workflows/ci.yml : lint, build, tests unitaires, script de tracking automatisé et alertes Slack à chaque push/PR.
+- Gestion des secrets (SLACK_WEBHOOK_URL, credentials) via Github.
+- Traçabilité complète des tests et alertes dans le pipeline CI.
+- Prochaine étape : ajout du déploiement automatique et des tests E2E.
+
+- Création du script automatisé test-ceredis-tracking.js pour simuler la complétion d’activités (QCM, texte libre, journal, écoute) via l’API /api/ceredis/track.
+- Génération d’un rapport JSON détaillant les succès/échecs pour chaque activité.
+- Validation du flux d’alerte Slack : en cas d’erreur critique (ex : API injoignable, erreur xAPI/CaSS), un message est envoyé sur le canal configuré.
+- Procédure : lancer le serveur Next.js puis exécuter node scripts/test-ceredis-tracking.js pour tester le tracking et la supervision d’alertes.
+
+- Ajout de logs détaillés (succès, erreurs, refresh JWT) dans les API routes et le client CaSS/xAPI.
+- Préparation de l’intégration Sentry (ou équivalent) pour la capture automatique des erreurs serveur critiques.
+- Objectif : assurer la traçabilité des erreurs, faciliter le debug et garantir la robustesse du tracking pédagogique.
+- Prochaine étape : configurer alertes email/Slack et monitoring temps réel.
+
+- Démarrage de la phase de tests manuels et automatisés sur le tracking pédagogique : QCM, texte libre, journal, écoute, etc.
+- Objectif : vérifier la création des statements xAPI et assertions CaSS pour chaque activité, robustesse des logs et monitoring serveur.
+- Préparation d’un script de test automatisé pour simuler la complétion des activités principales.
+- Suivi des erreurs et succès dans les logs backend, vérification du refresh JWT CaSS.
+- Prochaine étape : monitoring des erreurs serveur et optimisation du cache CaSS.
+
+
+- Création de la page /dashboard/teacher pour visualiser les statistiques d'apprentissage des élèves (mock data)
+- Ajout de l'API route /api/analytics/teacher (mock, à connecter à PocketBase/xAPI/CaSS ensuite)
+- Ajout du lien "Dashboard Enseignant" dans le menu principal (Header)
+- Préparation pour l'intégration des vraies données et des exports CSV/JSON
+
+# 2026-01-19 - Intégration complète moteur CEREDIS (API, dashboard, tests)
+
+- Intégration du moteur CEREDIS en TypeScript (conversion, typage, index)
+- Création de l'API route /api/ceredis/calculate (calcul score, niveau, validation)
+- Ajout du client TypeScript et du hook React pour le calcul côté frontend
+- Création de la page dashboard élève avec ScoreCard, LevelBadge, DomainRadar
+- Ajout de tests unitaires (Vitest) pour le moteur et la logique métier
+- Ajout de tests UI (Testing Library + Vitest) pour ScoreCard et DomainRadar
+- Ajout d'un test end-to-end Playwright pour l'API CEREDIS
+- Documentation de toutes les étapes dans DEVLOG.md
+
+# 2026-01-19 - Composants ScoreCard & DomainRadar
+
+- Ajout du composant ScoreCard pour l'affichage du score CEREDIS et du niveau CECRL
+- Ajout du composant DomainRadar pour la visualisation graphique des scores par domaine
+- Intégration de ces composants dans la page /dashboard/student
+
+# 2026-01-19 - Intégration API CEREDIS & Dashboard
+
+- Création de l'API route /api/ceredis/calculate pour le calcul des scores CEREDIS
+- Ajout d'un client TypeScript pour requêter l'API
+- Création du hook useCeredisScore pour le frontend
+- Création de la page /dashboard/student pour afficher les scores calculés
+
+## 2026-01-19 - Migration moteur CEREDIS
+
+- Extraction de l'archive ceredis-engine-v1.0.tar.gz
+- Création de la structure services/ceredis-calculator/engine et config
+- Conversion des fichiers JS du moteur en TypeScript : evidenceAggregator, competencyCalculator, domainCalculator, ceredisCalculator, cecrlDecider, levelValidator
+- Création d'un index.ts pour exposer toutes les fonctions du moteur
+- Ajout d'un config.ts pour charger la configuration CEREDIS
+
+/* ...dernier log... */
+# [2026-01-18] Migration Next.js 16 et sécurisation des routes
+
+- Migration du projet vers Next.js 16.1.1 : suppression de l’ancien middleware.ts (obsolète), création de proxy.ts pour la protection des routes selon le rôle (élève/enseignant).
+- Correction de tous les problèmes de build (hooks client, typage NextAuth, typage middleware, etc.).
+- Build de production validé sans warning ni erreur.
+- Commit et push sur Github de l’ensemble des modifications.
+
+---
+
 # [2026-01-14] Feuille de route détaillée - Intégration Tracking CEREDIS
 
 ## Objectif principal

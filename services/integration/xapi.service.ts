@@ -12,18 +12,21 @@ export class XApiService {
   private baseActivityUrl: string;
 
   constructor(
-    lrsUrl: string = process.env.NEXT_PUBLIC_LRS_URL || 'https://lrs.ceredis.net/xAPI',
-    username: string = process.env.NEXT_PUBLIC_LRS_USERNAME || '',
-    password: string = process.env.NEXT_PUBLIC_LRS_PASSWORD || '',
-    baseActivityUrl: string = 'https://enaa-chansons.ceredis.net'
+    lrsUrl = process.env.XAPI_LRS_URL || 'https://lrs.ceredis.net/xAPI',
+    username = process.env.XAPI_LRS_USERNAME || '',
+    password = process.env.XAPI_LRS_PASSWORD || '',
+    baseActivityUrl = 'https://enaa-chansons.ceredis.net'
   ) {
     this.baseActivityUrl = baseActivityUrl;
 
-    // Créer l'authentification Basic (compatible navigateur)
-    const auth = btoa(`${username}:${password}`);
+    // Nettoyer l'URL pour garantir baseURL = .../xAPI (jamais /statements ou slash final)
+    let cleanUrl = lrsUrl
+      .replace(/\/statements\/?$/, '') // retire /statements ou /statements/
+      .replace(/\/?$/, ''); // retire le slash final éventuel
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
 
     this.client = axios.create({
-      baseURL: lrsUrl,
+      baseURL: cleanUrl,
       headers: {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',

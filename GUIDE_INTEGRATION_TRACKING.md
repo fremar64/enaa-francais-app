@@ -313,6 +313,37 @@ fetch('/api/ceredis/track', {
 
 ---
 
+## 🚦 INTÉGRATION CI/CD, TESTS ET DÉPLOIEMENT AUTOMATIQUE
+
+### Pipeline CI/CD (Github Actions)
+
+- **Fichier** : `.github/workflows/ci.yml`
+- **Étapes automatisées** :
+  - Lint du code (`npm run lint`)
+  - Build (`npm run build`)
+  - Tests unitaires et d'intégration (`npm test`)
+  - Script de tracking automatisé (`node scripts/test-ceredis-tracking.js`)
+  - Alertes Slack en cas d'échec critique (voir `services/monitoring/alert.service.ts`)
+  - Déploiement automatique sur Vercel après validation des tests
+- **Secrets à configurer dans Github** :
+  - `SLACK_WEBHOOK_URL` (alertes)
+  - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (déploiement)
+  - Autres credentials nécessaires (CaSS, LRS, etc.)
+
+### Procédure de supervision
+
+1. À chaque push/PR, le pipeline CI/CD s'exécute automatiquement.
+2. En cas d'échec critique (test, tracking, build), une alerte est envoyée sur Slack.
+3. Si tous les tests passent, le déploiement est déclenché sur Vercel.
+4. Le rapport de test de tracking est généré dans `scripts/test-ceredis-tracking-report.json`.
+
+### Pour aller plus loin
+- Ajouter des tests E2E (Playwright) dans le pipeline.
+- Ajouter un badge de statut CI dans le README.md.
+- Consulter le DEVLOG.md pour l'historique des automatisations.
+
+---
+
 ## 📊 ARCHITECTURE FINALE
 
 ```

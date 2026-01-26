@@ -34,3 +34,19 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## 🚦 Intégration CI/CD et Déploiement Automatique
+
+Ce projet utilise un pipeline CI/CD Github Actions pour garantir la qualité, la traçabilité et le déploiement continu :
+
+- **Lint, build, tests unitaires et d’intégration** à chaque push/PR
+- **Script de tracking automatisé** (tests de l’API /api/ceredis/track)
+- **Alertes Slack** en cas d’échec critique (tracking, build, tests)
+- **Déploiement automatique sur Vercel** après validation des tests
+- **Gestion des secrets** (SLACK_WEBHOOK_URL, VERCEL_TOKEN, etc.) via Github
+
+Voir le fichier `.github/workflows/ci.yml` et le [GUIDE_INTEGRATION_TRACKING.md](./GUIDE_INTEGRATION_TRACKING.md) pour la documentation complète.
+
+---
