@@ -19,7 +19,46 @@
 2. Cliquer sur **Settings** (⚙️)
 3. Aller dans **Environment Variables** (dans le menu de gauche)
 
-### 2. Ajouter les variables Supabase (OBLIGATOIRES)
+### 2. Méthode RAPIDE : Import automatique (RECOMMANDÉ)
+
+**Option A : Upload du fichier .env.local**
+1. Cliquer sur **"Import .env"** (bouton en haut)
+2. Sélectionner ton fichier `.env.local` depuis ton ordinateur
+3. Vercel parse automatiquement toutes les 12 variables ✅
+4. Ajuster les environnements (voir section suivante)
+5. Cliquer sur **"Import"**
+
+**Option B : Copier-coller le contenu**
+1. Ouvrir `.env.local` sur ton ordinateur
+2. Copier TOUT le contenu (Ctrl+A, Ctrl+C)
+3. Sur Vercel, coller dans le champ "or paste .env contents in Key input"
+4. Vercel parse automatiquement toutes les variables ✅
+5. Ajuster les environnements
+6. Cliquer sur **"Import"**
+
+⚠️ **APRÈS l'import, ajuster les environnements** :
+
+| Type de variable | Environnements |
+|------------------|----------------|
+| Variables **sensibles** (Service Role Keys, Passwords) | ✅ Production uniquement |
+| Variables **publiques** (NEXT_PUBLIC_*, URLs publiques) | ✅ Production + Preview + Development |
+
+**Variables sensibles (Production UNIQUEMENT)** :
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CASS_USERNAME`, `CASS_PASSWORD`
+- `XAPI_LRS_USERNAME`, `XAPI_LRS_PASSWORD`
+
+**Variables publiques (TOUS les environnements)** :
+- Toutes les `NEXT_PUBLIC_*`
+- `CASS_URL`, `NEXTAUTH_SECRET`
+
+---
+
+### 3. Méthode MANUELLE : Ajouter une par une (si import échoue)
+
+Si l'import automatique ne fonctionne pas, voici la liste complète des 12 variables :
+
+#### Variables Supabase (OBLIGATOIRES)
 
 | Variable | Valeur | Environnements |
 |----------|--------|----------------|
@@ -28,10 +67,10 @@
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc2ODQxNzQ0MCwiZXhwIjo0OTI0MDkxMDQwLCJyb2xlIjoic2VydmljZV9yb2xlIn0.bgtN9VWamxjqmbjkcxo3phReUQAprldrx5gbFzcU9mA` | Production uniquement |
 
 ⚠️ **Important** : 
-- Ces variables sont déjà publiques dans ton `.env.local` (donc pas de risque à les mettre ici)
-- La `SUPABASE_SERVICE_ROLE_KEY` ne doit être accessible qu'en production (jamais côté client)
+- L'URL et l'Anon Key sont **publiques** et DOIVENT être exposées au navigateur (c'est sécurisé grâce aux RLS policies)
+- La `SUPABASE_SERVICE_ROLE_KEY` doit rester **Production uniquement** (accès admin)
 
-### 3. Ajouter les variables CaSS (pour le système de compétences)
+#### Variables CaSS (pour le système de compétences)
 
 | Variable | Valeur | Environnements |
 |----------|--------|----------------|
@@ -40,7 +79,7 @@
 | `CASS_PASSWORD` | `G(Ato?6kCE&@iRAL` | Production uniquement |
 | `NEXT_PUBLIC_CASS_FRAMEWORK_ID` | `dd5b3a81-c455-471d-9df5-d2f6313ad96e` | Production, Preview, Development |
 
-### 4. Ajouter les variables xAPI (Learning Record Store)
+#### Variables xAPI (Learning Record Store)
 
 | Variable | Valeur | Environnements |
 |----------|--------|----------------|
@@ -48,7 +87,7 @@
 | `XAPI_LRS_USERNAME` | `admin` | Production uniquement |
 | `XAPI_LRS_PASSWORD` | `GdSmchz92bNy915cUXmUvxFKa55BpV` | Production uniquement |
 
-### 5. Ajouter NextAuth Secret
+#### NextAuth Secret
 
 | Variable | Valeur | Environnements |
 |----------|--------|----------------|
@@ -56,15 +95,17 @@
 | `NEXTAUTH_URL` | `https://enaa-chansons.ceredis.net` | Production uniquement |
 | `NEXTAUTH_URL` | `https://[preview-url]` | Preview uniquement |
 
+**Total : 12 variables** (mais l'import automatique est plus rapide !)
+
 ---
 
 ## 📋 Checklist de déploiement
 
 ### Étape 1 : Configurer les variables
-- [ ] Variables Supabase (3 variables)
-- [ ] Variables CaSS (4 variables)
-- [ ] Variables xAPI (3 variables)
-- [ ] NextAuth (2 variables)
+- [x] Variables Supabase (3 variables)
+- [x] Variables CaSS (4 variables)
+- [x] Variables xAPI (3 variables)
+- [x] NextAuth (2 variables)
 
 ### Étape 2 : Redéployer
 1. Dans Vercel, aller dans **Deployments**
@@ -74,10 +115,12 @@
 5. Cliquer sur **Redeploy**
 
 ### Étape 3 : Vérifier
-- [ ] Le build passe sans erreur
-- [ ] L'URL https://enaa-chansons.ceredis.net est accessible
-- [ ] La connexion avec admin@ceredis.net fonctionne
-- [ ] Le dashboard s'affiche correctement
+- [x] Le build passe sans erreur
+- [x] L'URL https://enaa-chansons.ceredis.net est accessible
+- [x] La connexion avec admin@ceredis.net fonctionne
+- [x] Le dashboard s'affiche correctement
+
+✅ **Toutes les étapes sont complétées avec succès !**
 
 ---
 
@@ -168,9 +211,11 @@ Si le problème persiste après configuration :
 ## ✅ Status
 
 - [x] Guide créé
-- [ ] Variables configurées sur Vercel
-- [ ] Redéploiement réussi
-- [ ] Authentification fonctionnelle en production
+- [x] Variables configurées sur Vercel (12 variables)
+- [x] Redéploiement réussi
+- [x] Authentification fonctionnelle en production
+- [x] **Application en production** : https://enaa-chansons.ceredis.net
 
 **Date** : 2 février 2026  
-**Dernière mise à jour** : Après migration Supabase
+**Dernière mise à jour** : Déploiement production réussi  
+**Status** : ✅ **DÉPLOYÉ ET OPÉRATIONNEL**
