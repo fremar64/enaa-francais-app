@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import { calculateUserScore } from '@/lib/ceredis/client';
+import type { CompetencyScore } from '@/lib/ceredis/types';
 
 export interface DashboardStats {
   seancesTerminees: number;
@@ -11,6 +12,7 @@ export interface DashboardStats {
   scoreCeredis: number | null;
   niveauCecrl: string | null;
   domainesScores: Record<string, number>;
+  competencyScores: Record<string, CompetencyScore>;
   dernieresActivites: Array<{
     id: string;
     titre: string;
@@ -41,6 +43,7 @@ export function useDashboard(): DashboardStats {
       'D4': 0,
       'D5': 0,
     },
+    competencyScores: {},
     dernieresActivites: [],
     tendance: 'stable',
     isLoading: true,
@@ -157,6 +160,38 @@ export function useDashboard(): DashboardStats {
           }
         });
 
+        // 4.5. Calculer les scores par compétence (19 compétences)
+        const competencyScores: Record<string, CompetencyScore> = {};
+        const competencyGroups: Record<string, { scores: number[], types: Set<string> }> = {};
+
+        evidences.forEach(evidence => {
+          const competenceId = evidence.competency_id;
+          if (!competenceId) return;
+
+          if (!competencyGroups[competenceId]) {
+            competencyGroups[competenceId] = { scores: [], types: new Set() };
+          }
+
+          if (evidence.score !== undefined) {
+            competencyGroups[competenceId].scores.push(evidence.score);
+          }
+          if (evidence.evidence_type) {
+            competencyGroups[competenceId].types.add(evidence.evidence_type);
+          }
+        });
+
+        // Calculer le score moyen pour chaque compétence
+        Object.entries(competencyGroups).forEach(([competencyId, data]) => {
+          if (data.scores.length > 0) {
+            const avgScore = data.scores.reduce((sum, s) => sum + s, 0) / data.scores.length;
+            competencyScores[competencyId] = {
+              score: Math.round(avgScore),
+              evidenceCount: data.scores.length,
+              evidenceTypes: Array.from(data.types)
+            };
+          }
+        });
+
         // 5. Tenter de récupérer le score CEREDIS via le moteur (API)
         let scoreCeredis: number | null = null;
         let niveauCecrl: string | null = null;
@@ -174,6 +209,11 @@ export function useDashboard(): DashboardStats {
                 domainesScores[domain] = Math.round(v);
               }
             });
+          }
+
+          // Remplacer les scores de compétences si fournis par le moteur
+          if (ceredisResult.competencyScores) {
+            Object.assign(competencyScores, ceredisResult.competencyScores);
           }
         } catch (error) {
           // Fallback : utiliser l'estimation approximative locale
@@ -233,6 +273,7 @@ export function useDashboard(): DashboardStats {
           scoreCeredis,
           niveauCecrl,
           domainesScores,
+          competencyScores,
           dernieresActivites,
           tendance,
           isLoading: false,

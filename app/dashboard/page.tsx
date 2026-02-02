@@ -179,7 +179,12 @@ function DashboardContent() {
               <HistoriqueActivites activites={stats.dernieresActivites} />
             </div>
 
-            {/* Section Informations Système (pour admin/debug) */}
+            {/* SECTION 4 : Détail des compétences - SEULEMENT si données disponibles */}
+            {stats.competencyScores && Object.keys(stats.competencyScores).length > 0 && (
+              <CompetencyGrid competencyScores={stats.competencyScores} />
+            )}
+
+            {/* SECTION 5 : Informations Système (pour admin/debug) */}
             {user?.role === 'admin' && (
               <Card>
                 <CardHeader>

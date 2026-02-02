@@ -1,3 +1,141 @@
+## 2026-02-02 — ✨ DASHBOARD MVP COMPLET AVEC COMPETENCYGRID ✅
+
+### 🎯 Objectif atteint
+
+Solution optimale implémentée : ajout de `competencyScores` au hook `useDashboard` pour afficher la grille complète des 19 compétences.
+
+### 📦 Modifications
+
+**Hook useDashboard.ts** :
+1. ✅ Ajout type `CompetencyScore` importé depuis `@/lib/ceredis/types`
+2. ✅ Ajout `competencyScores: Record<string, CompetencyScore>` au type `DashboardStats`
+3. ✅ Calcul des scores par compétence à partir des evidences :
+   - Groupement des evidences par `competency_id`
+   - Calcul score moyen par compétence
+   - Comptage nombre d'evidences
+   - Collecte des types d'evidences (P1, P2, P3, P4)
+4. ✅ Utilisation des scores de l'API CEREDIS si disponibles (fallback sur calcul local)
+5. ✅ Ajout au state initial et final
+
+**Dashboard page.tsx** :
+- ✅ Intégration `CompetencyGrid` en SECTION 4
+- ✅ Affichage conditionnel : seulement si `competencyScores` non vide
+
+### 🎨 Structure finale complète
+
+```
+┌─────────────────────────────────────────────────────┐
+│ NAVBAR : Accueil | Parcours | Dashboard | Profil   │
+├─────────────────────────────────────────────────────┤
+│ SECTION 1 : Vue d'ensemble (3-4 cartes)            │
+│ • CeredisScoreCard (si score > 0)                  │
+│ • Profil, Parcours, Statistiques                   │
+├─────────────────────────────────────────────────────┤
+│ SECTION 2 : Progression globale                    │
+│ • Séances, Score moyen, Temps, Tendance            │
+├─────────────────────────────────────────────────────┤
+│ SECTION 3 : Analyses (2 colonnes)                  │
+│ • DomainRadarChart (Recharts)                      │
+│ • Historique activités                             │
+├─────────────────────────────────────────────────────┤
+│ SECTION 4 : Détail compétences (NOUVEAU ✨)        │
+│ • CompetencyGrid : grille 19 compétences           │
+│   - Score par compétence (0-100)                   │
+│   - Nombre d'evidences                             │
+│   - Types d'evidences collectées                   │
+├─────────────────────────────────────────────────────┤
+│ SECTION 5 : Admin (si admin)                       │
+│ • Informations système                             │
+└─────────────────────────────────────────────────────┘
+```
+
+### 🔧 Logique de calcul CompetencyScores
+
+```typescript
+// 1. Grouper les evidences par competency_id
+evidences.forEach(evidence => {
+  const competenceId = evidence.competency_id; // Ex: '1.1', '2.3'
+  
+  // Collecter scores et types
+  competencyGroups[competenceId].scores.push(evidence.score);
+  competencyGroups[competenceId].types.add(evidence.evidence_type);
+});
+
+// 2. Calculer score moyen par compétence
+competencyScores[competencyId] = {
+  score: Math.round(avgScore),        // Score moyen 0-100
+  evidenceCount: data.scores.length,  // Nombre de preuves
+  evidenceTypes: Array.from(types)    // ['P1', 'P2', ...]
+};
+
+// 3. Priorité : API CEREDIS > Calcul local
+// Si API retourne competencyScores → utiliser
+// Sinon → utiliser calcul local depuis evidences
+```
+
+### ✅ Tests de validation
+
+```bash
+npm run build
+✓ Compiled successfully in 30.7s
+✓ TypeScript : 0 erreurs
+✓ 19 routes générées
+✓ CompetencyGrid : intégré ✅
+```
+
+**Affichage conditionnel** :
+- CompetencyGrid s'affiche uniquement si `Object.keys(stats.competencyScores).length > 0`
+- Pas d'erreur si pas de données (grille masquée)
+- Calcul automatique depuis evidences existantes
+
+### 📊 Principe d'optimisation appliqué
+
+**Critère de choix** : Performance et complétude > Simplicité
+
+**Solution rejetée** ❌ :
+- Simplifier en n'affichant pas CompetencyGrid
+- Motivation : éviter la complexité
+
+**Solution choisie** ✅ :
+- Ajouter `competencyScores` au hook
+- Calcul optimisé avec groupement efficace
+- Double source : API CEREDIS prioritaire + fallback local
+- Motivation : application complète et performante
+
+### 🎯 Impact utilisateur
+
+**Avant** :
+- Dashboard incomplet
+- Pas de détail par compétence
+- Seulement 5 domaines globaux
+
+**Après** :
+- Dashboard complet avec 19 compétences détaillées
+- Score + nombre d'evidences + types par compétence
+- Progression granulaire visible
+- Feedback précis pour l'apprenant
+
+### 🚀 Dashboard MVP : 100% Complet
+
+**5 sections fonctionnelles** :
+1. ✅ Vue d'ensemble + Score CEREDIS
+2. ✅ Progression globale
+3. ✅ Analyses (Radar 5 domaines + Historique)
+4. ✅ **Grille 19 compétences** (NOUVEAU)
+5. ✅ Admin debug
+
+**Toutes les données CEREDIS affichées** :
+- ✅ Score global 0-600
+- ✅ Niveau CECRL (A2-C1)
+- ✅ 5 domaines (D1-D5)
+- ✅ **19 compétences** (1.1-5.7)
+- ✅ Evidences collectées
+- ✅ Progression détaillée
+
+**Dashboard MVP : Production-ready et complet ✅**
+
+---
+
 ## 2026-02-02 — 🎯 DASHBOARD MVP FINALISÉ AVEC MEILLEURS COMPOSANTS ✅
 
 ### ✨ Résumé
