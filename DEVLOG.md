@@ -1,3 +1,83 @@
+## 2026-02-02 — 🚀 DASHBOARD MVP AVEC NAVIGATION GLOBALE ✅
+
+### ✨ Résumé
+
+**Problème identifié** : Utilisateur "piégé" sur `/dashboard` sans possibilité de retourner à l'accueil ou aux parcours.
+
+**Solution implémentée** :
+- ✅ **Navigation globale** créée (Navbar + AuthenticatedLayout)
+- ✅ **Pages manquantes** : `/parcours` et `/profile` créées
+- ✅ **Dashboard optimisé** avec tous les composants existants
+- ✅ **Build production** réussi : 19 routes (vs 17 avant)
+
+### 📦 Fichiers créés/modifiés
+
+**Navigation** :
+- `components/layout/Navbar.tsx` — Navigation horizontale avec liens Accueil/Parcours/Dashboard/Profil/Déconnexion
+- `components/layout/AuthenticatedLayout.tsx` — Layout réutilisable avec Navbar
+
+**Pages** :
+- `app/parcours/page.tsx` — Liste des chansons disponibles (utilise `useChansons()`)
+- `app/profile/page.tsx` — Profil utilisateur avec informations complètes
+- `app/dashboard/page.tsx` — Dashboard intégré avec le nouveau layout
+
+**Types et exports** :
+- `lib/ceredis/types.ts` — Ajout de `DashboardStats` et `RecentActivity`
+- `components/dashboard/index.ts` — Exports centralisés (CeredisScoreCard, DomainRadarChart, CompetencyGrid)
+
+### 🎯 Infrastructure CEREDIS (déjà existante)
+
+**API et moteur** :
+- ✅ `/api/ceredis/calculate` — Endpoint complet avec moteur de calcul
+- ✅ `services/ceredis-calculator/` — Moteur CEREDIS complet avec 16 fichiers
+- ✅ `lib/ceredis/client.ts` — Client pour appeler l'API
+- ✅ `hooks/useDashboard.ts` — Hook complet avec fallback local
+
+**Composants dashboard** :
+- ✅ `CeredisScoreCard` — Score global + niveau CECRL
+- ✅ `DomainRadarChart` — Graphique radar 5 domaines
+- ✅ `CompetencyGrid` — Grille 19 compétences
+- ✅ `ProgressionGlobale` — Stats d'activité
+- ✅ `HistoriqueActivites` — Dernières activités
+
+### 🔍 Navigation complète
+
+```
+Accueil (/) ←→ Parcours (/parcours) ←→ Dashboard (/dashboard) ←→ Profil (/profile)
+                                                                         ↓
+                                                                  Déconnexion → /login
+```
+
+### ✅ Tests de validation
+
+```bash
+# Build production
+npm run build
+✓ Compiled successfully in 44s
+✓ 19 routes générées (vs 17 avant)
+
+# Routes créées
+○ /parcours
+○ /profile
+○ /dashboard (avec nouveau layout)
+```
+
+### 📊 Résultat
+
+**Problème résolu** :
+- ❌ **AVANT** : Utilisateur bloqué sur dashboard, obligé de se déconnecter
+- ✅ **APRÈS** : Navigation fluide dans toute l'application
+
+**Expérience utilisateur** :
+- Navigation claire et intuitive
+- Lien actif mis en évidence (fond purple)
+- Responsive (mobile + desktop)
+- Cohérence visuelle sur toutes les pages
+
+**Prochaine étape** : Optimisation du dashboard avec vues différenciées par rôle (élève/enseignant/chercheur) — prévu mercredi 4 février.
+
+---
+
 ## 2026-02-01/02 — 🎉 MIGRATION POCKETBASE → SUPABASE TERMINÉE ✅
 
 ### ✨ Résumé exécutif

@@ -310,3 +310,60 @@ export function getCompetencyDomain(competencyId: string): string {
 export function getDomainCompetencies(domainId: string): string[] {
   return DOMAIN_INFO[domainId]?.competencies || [];
 }
+
+// ============================================================================
+// TYPES POUR LE DASHBOARD
+// ============================================================================
+
+/**
+ * Activité récente de l'utilisateur
+ */
+export interface RecentActivity {
+  id: string;
+  type: 'seance' | 'evidence' | 'validation';
+  title: string;
+  description: string;
+  date: string;               // ISO 8601
+  score?: number;
+  level?: 'A2' | 'B1' | 'B2' | 'C1';
+}
+
+/**
+ * Domaine avec score pour le dashboard
+ */
+export interface DomainScore {
+  domainId: string;
+  domainName: string;
+  score: number;              // Score 0-100
+  level: 'A2' | 'B1' | 'B2' | 'C1';
+  competencies: CompetencyScore[];
+}
+
+/**
+ * Statistiques complètes du dashboard
+ */
+export interface DashboardStats {
+  // Données CEREDIS
+  scoreCeredis: number | null;
+  niveauCecrl: 'A2' | 'B1' | 'B2' | 'C1' | null;
+  domainesScores: DomainScore[];
+  competencyScores: Record<string, CompetencyScore>;
+  
+  // Statistiques d'activité
+  seancesTerminees: number;
+  seancesEnCours: number;
+  scoreMoyen: number;
+  tempsTotal: number;         // En minutes
+  
+  // Progression
+  tendance: 'up' | 'down' | 'stable';
+  progressionSemaine: number; // Pourcentage
+  
+  // Historique
+  dernieresActivites: RecentActivity[];
+  
+  // Métadonnées
+  isLoading: boolean;
+  error: string | null;
+  lastUpdate: string | null;  // ISO 8601
+}

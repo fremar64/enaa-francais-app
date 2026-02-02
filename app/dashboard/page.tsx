@@ -1,52 +1,23 @@
 'use client';
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboard } from "@/hooks/useDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutDashboard, User, Book, LogOut } from "lucide-react";
+import { User, Book } from "lucide-react";
 import { RadarCompetences } from "@/components/dashboard/RadarCompetences";
 import { HistoriqueActivites } from "@/components/dashboard/HistoriqueActivites";
 import { ProgressionGlobale } from "@/components/dashboard/ProgressionGlobale";
 
 function DashboardContent() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const stats = useDashboard();
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <LayoutDashboard className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Mon Dashboard</h1>
-                <p className="text-sm text-muted-foreground">
-                  Bienvenue {user?.name || user?.username || user?.email}
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Déconnexion
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container px-4 py-8">
+    <div className="space-y-8">
         {stats.isLoading ? (
           <DashboardSkeleton />
         ) : stats.error ? (
@@ -57,7 +28,7 @@ function DashboardContent() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-8">
+          <>
             {/* Section Profil et Parcours */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {/* Carte Profil */}
@@ -221,9 +192,8 @@ function DashboardContent() {
                 </CardContent>
               </Card>
             )}
-          </div>
+          </>
         )}
-      </main>
     </div>
   );
 }
@@ -260,7 +230,9 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
-      <DashboardContent />
+      <AuthenticatedLayout>
+        <DashboardContent />
+      </AuthenticatedLayout>
     </ProtectedRoute>
   );
 }
