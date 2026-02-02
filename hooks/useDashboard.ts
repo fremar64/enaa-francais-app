@@ -25,6 +25,16 @@ export interface DashboardStats {
   tendance: 'up' | 'down' | 'stable';
   isLoading: boolean;
   error: string | null;
+  
+  // Nouveaux champs du moteur CEREDIS
+  validation?: {
+    valid: boolean;
+    level: string;
+    errors: string[];
+    warnings: string[];
+  } | null;
+  engineVersion?: string;
+  computedAt?: string;
 }
 
 export function useDashboard(): DashboardStats {
@@ -48,6 +58,9 @@ export function useDashboard(): DashboardStats {
     tendance: 'stable',
     isLoading: true,
     error: null,
+    validation: null,
+    engineVersion: 'local',
+    computedAt: new Date().toISOString(),
   });
 
   useEffect(() => {
@@ -195,11 +208,17 @@ export function useDashboard(): DashboardStats {
         // 5. Tenter de récupérer le score CEREDIS via le moteur (API)
         let scoreCeredis: number | null = null;
         let niveauCecrl: string | null = null;
+        let validation: any = null;
+        let engineVersion: string = 'local';
+        let computedAt: string = new Date().toISOString();
 
         try {
           const ceredisResult = await calculateUserScore(user.id);
           scoreCeredis = ceredisResult.ceredisScore;
           niveauCecrl = ceredisResult.cecrlLevel;
+          validation = ceredisResult.validation;
+          engineVersion = ceredisResult.engineVersion || '1.0';
+          computedAt = ceredisResult.computedAt || new Date().toISOString();
 
           // Remplacer les scores de domaines si fournis par le moteur
           if (ceredisResult.domainScores) {
@@ -278,6 +297,9 @@ export function useDashboard(): DashboardStats {
           tendance,
           isLoading: false,
           error: null,
+          validation,
+          engineVersion,
+          computedAt,
         });
 
       } catch (error: any) {

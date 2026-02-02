@@ -7,6 +7,8 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { User, Book } from "lucide-react";
 import { CeredisScoreCard } from "@/components/dashboard/CeredisScoreCard";
 import { DomainRadarChart } from "@/components/dashboard/DomainRadarChart";
@@ -37,23 +39,30 @@ function DashboardContent() {
               
               {/* Carte Score CEREDIS - SEULEMENT si score disponible et > 0 */}
               {stats.scoreCeredis !== null && stats.scoreCeredis > 0 && (
-                <CeredisScoreCard 
-                  score={{
-                    userId: user?.id || '',
-                    ceredisScore: stats.scoreCeredis,
-                    cecrlLevel: (stats.niveauCecrl || 'A2') as 'A2' | 'B1' | 'B2' | 'C1',
-                    domainScores: stats.domainesScores,
-                    competencyScores: {},
-                    validation: { 
-                      valid: true, 
-                      level: (stats.niveauCecrl || 'A2') as 'A2' | 'B1' | 'B2' | 'C1',
-                      errors: [], 
-                      warnings: [] 
-                    },
-                    computedAt: new Date().toISOString(),
-                    engineVersion: '1.0'
-                  }}
-                />
+                <div className="space-y-2">
+                  <CeredisScoreCard 
+                    score={{
+                      userId: user?.id || '',
+                      ceredisScore: stats.scoreCeredis,
+                      cecrlLevel: (stats.niveauCecrl || 'A2') as 'A2' | 'B1' | 'B2' | 'C1',
+                      domainScores: stats.domainesScores,
+                      competencyScores: {},
+                      validation: (stats.validation as any) || { 
+                        valid: true, 
+                        level: (stats.niveauCecrl || 'A2') as 'A2' | 'B1' | 'B2' | 'C1',
+                        errors: [], 
+                        warnings: [],
+                      },
+                      computedAt: stats.computedAt || new Date().toISOString(),
+                      engineVersion: stats.engineVersion || '1.0'
+                    }}
+                  />
+                  {stats.engineVersion && (
+                    <Badge variant="outline" className="text-xs">
+                      {stats.engineVersion === 'local' ? 'Calcul local' : `Moteur CEREDIS v${stats.engineVersion}`}
+                    </Badge>
+                  )}
+                </div>
               )}
               {/* Carte Profil */}
               <Card>
@@ -158,6 +167,33 @@ function DashboardContent() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Alertes de validation du moteur CEREDIS */}
+            {stats.validation?.warnings && stats.validation.warnings.length > 0 && (
+              <Alert className="border-yellow-500 bg-yellow-50">
+                <AlertTitle className="text-yellow-800">Avertissements</AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc pl-4 text-yellow-700">
+                    {stats.validation.warnings.map((warning, i) => (
+                      <li key={i}>{warning}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {stats.validation?.errors && stats.validation.errors.length > 0 && (
+              <Alert variant="destructive">
+                <AlertTitle>Erreurs de validation</AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc pl-4">
+                    {stats.validation.errors.map((error, i) => (
+                      <li key={i}>{error}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* SECTION 2 : Progression globale */}
             <ProgressionGlobale

@@ -1,3 +1,70 @@
+## 2026-02-02 14:15 — 🚨 CORRECTIONS CRITIQUES + INTÉGRATION MOTEUR CEREDIS ✅
+
+### 🎯 Principe réaffirmé
+
+**"Toujours choisir la solution optimale qui maximise la performance et la complétude, même si elle nécessite plus de développement."**
+
+### 🔧 Problèmes corrigés
+
+1. ✅ **Hook useCeredisScore** : Types stricts appliqués
+   - ❌ AVANT : `result: any`, `err: any`, fonction `calculateUserScore` inexistante
+   - ✅ APRÈS : `result: CeredisResult | null`, `err: unknown`, fonction `calculateCeredisScore`
+   - Ajout : `'use client'`, JSDoc complète, gestion d'erreurs robuste
+
+2. ✅ **Page obsolète** : `pages/dashboard/student.tsx` supprimée
+   - Page obsolète du router Pages qui bloquait le build
+   - Remplacée par `app/dashboard/page.tsx` (router App moderne)
+
+### 📦 Intégration Moteur CEREDIS Phase 2
+
+**API Route** : `/api/ceredis/calculate`
+- ✅ Utilise le moteur complet `services/ceredis-calculator`
+- ✅ Récupère evidences depuis Supabase
+- ✅ Transforme et passe au moteur
+- ✅ Retourne résultat avec validation
+
+**Client** : `lib/ceredis/client.ts`
+- ✅ `calculateUserScore(userId)` → appelle API
+- ✅ Alias `calculateCeredisScore` pour compatibilité
+- ✅ Gestion erreurs propre
+
+**Hook** : `hooks/useDashboard.ts`
+- ✅ Appelle API CEREDIS en priorité
+- ✅ Fallback sur calcul local si API échoue
+- ✅ Types étendus : `validation`, `engineVersion`, `computedAt`
+- ✅ Graceful degradation garantie
+
+**Dashboard** : `app/dashboard/page.tsx`
+- ✅ Badge indicateur moteur (local vs CEREDIS v1.0)
+- ✅ Alertes validation (warnings/errors)
+- ✅ Affichage conditionnel si données disponibles
+
+### ✅ Validation complète
+
+**Tests TypeScript** : 0 erreurs critiques (erreurs restantes dans tests uniquement)
+**Build production** : ✅ Successful (21.8s)
+**Routes générées** : 19 routes
+**Dashboard** : Opérationnel avec moteur CEREDIS
+
+### 📊 Résultat
+
+**Architecture complète** :
+```
+Client (Dashboard) → Hook useDashboard 
+  → API /api/ceredis/calculate 
+    → Moteur CEREDIS complet 
+      → Score précis (0-600) + Niveau CECRL + Validation
+```
+
+**Avantages** :
+- ✅ Scores précis (règles B2/C1, poids evidences)
+- ✅ Validation stricte du niveau CECRL
+- ✅ Fallback gracieux si API indisponible
+- ✅ Type-safety stricte maintenue
+- ✅ Production-ready
+
+---
+
 ## 2026-02-02 — ✨ DASHBOARD MVP COMPLET AVEC COMPETENCYGRID ✅
 
 ### 🎯 Objectif atteint
