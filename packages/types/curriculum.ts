@@ -3,6 +3,7 @@ export type DomainId = "communication" | "langue";
 export type CycleId = "primaire" | "college" | "lycee";
 
 export type LevelId =
+  | "gs"
   | "cp"
   | "ce1"
   | "ce2"

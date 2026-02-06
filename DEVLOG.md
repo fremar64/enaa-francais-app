@@ -1,3 +1,809 @@
+## 2026-02-06 00:52 - Feedback limite hauteur (rebond unique)
+
+### 🎯 Objectif
+Ajouter un micro-rebond unique au moment ou la limite de hauteur est atteinte.
+
+### ✅ Realisations
+- ✅ Animation courte appliquee une seule fois lors du passage en overflow
+- ✅ Ombre statique conservee
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Rebond unique base sur transition d'etat
+**Contexte** : Signaler la limite sans distraction continue.
+**Options considerees** :
+1. Animation continue - Avantages : visible; Inconvenients : distrayant
+2. Rebond unique - Avantages : discret; Inconvenients : subtil
+
+**Choix retenu** : Option 2
+**Justification** : Respect de l'attention de l'eleve.
+**Impact** : Keyframe + flag temporaire.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 2, Lignes ajoutees: +14, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~9s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+apps/lecture/app/globals.css (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Tester la perception du rebond avec un groupe d'enfants
+2. [ ] Ajuster la duree si besoin
+3. [ ] Conserver la progression locale avant Supabase
+
+### 💭 Notes
+Le rebond se declenche uniquement au premier passage en overflow.
+
+---
+
+## 2026-02-06 00:46 - Indicateur de scroll discret
+
+### 🎯 Objectif
+Ajouter un indicateur visuel discret lorsque la zone de saisie devient scrollable.
+
+### ✅ Realisations
+- ✅ Ombre interne haut/bas quand le texte depasse la limite
+- ✅ Activation conditionnelle basee sur le depassement
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Ombres internes plutot qu'un texte
+**Contexte** : Besoin d'un indice visuel non intrusif pour les enfants.
+**Options considerees** :
+1. Texte "Scroll" - Avantages : explicite; Inconvenients : distrayant
+2. Ombre interne haut/bas - Avantages : discret; Inconvenients : moins explicite
+
+**Choix retenu** : Option 2
+**Justification** : Indice visuel doux et coherent avec l'UI.
+**Impact** : Ajout d'une classe conditionnelle.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: +4, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~7s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajouter une micro-animation sur l'ombre si besoin
+2. [ ] Tester la lisibilite sur mobile
+3. [ ] Conserver la progression locale avant Supabase
+
+### 💭 Notes
+L'ombre s'affiche uniquement lorsque le scroll interne est actif.
+
+---
+
+## 2026-02-06 00:42 - Auto-resize limite par niveau
+
+### 🎯 Objectif
+Appliquer des limites de hauteur par niveau (GS/CP/CE1) et activer le scroll interne synchronise.
+
+### ✅ Realisations
+- ✅ Limites de lignes par niveau (GS 3, CP 6, CE1 10)
+- ✅ Auto-resize avec scroll interne au-dela de la limite
+- ✅ Overlay synchronise avec hauteur calculee
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Limiter la hauteur via line-height calcule
+**Contexte** : Besoin d'une hauteur adaptee au niveau.
+**Options considerees** :
+1. Hauteur fixe en px - Avantages : simple; Inconvenients : non adapte aux styles
+2. Calcul line-height + padding - Avantages : precis; Inconvenients : calcul runtime
+
+**Choix retenu** : Option 2
+**Justification** : Alignement fiable des caracteres.
+**Impact** : Auto-resize + scroll interne synchronise.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: +25, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~7s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajuster le min-height selon device
+2. [ ] Ajouter un indicateur visuel quand la limite est atteinte
+3. [ ] Conserver la progression locale avant Supabase
+
+### 💭 Notes
+Le scroll interne s'active automatiquement au-dela de la limite de lignes.
+
+---
+
+## 2026-02-06 00:34 - Auto-resize textarea + overlay
+
+### 🎯 Objectif
+Rendre la zone de saisie auto-extensible et synchroniser l'overlay de surlignage.
+
+### ✅ Realisations
+- ✅ Auto-resize de la Textarea via scrollHeight
+- ✅ Hauteur overlay synchronisee
+- ✅ Scroll sync conserve pour robustesse
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Auto-resize avec useLayoutEffect
+**Contexte** : Besoin d'un ajustement fluide sans saut visuel.
+**Options considerees** :
+1. Auto-resize via onInput - Avantages : simple; Inconvenients : moins fiable
+2. useLayoutEffect + scrollHeight - Avantages : alignement stable; Inconvenients : code additionnel
+
+**Choix retenu** : Option 2
+**Justification** : Synchronisation precise entre textarea et overlay.
+**Impact** : Ajout d'un state de hauteur partage.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: +18, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~7s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajuster le minimum/maximum de hauteur selon device
+2. [ ] Ajouter un indicateur visuel de zone expand
+3. [ ] Conserver la progression locale avant Supabase
+
+### 💭 Notes
+La hauteur est calculee a chaque modification de texte ou changement de phrase.
+
+---
+
+## 2026-02-06 00:29 - Scroll sync overlay
+
+### 🎯 Objectif
+Synchroniser le scroll entre la Textarea et l'overlay pour garder l'alignement du surlignage.
+
+### ✅ Realisations
+- ✅ Ajout de refs et sync scroll overlay/textarea
+- ✅ Zone scrollable propre avec hauteur max
+- ✅ Alignement maintenu pour les textes longs
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Scroll sync via refs
+**Contexte** : Besoin d'aligner les tokens sur les textes longs.
+**Options considerees** :
+1. Pas de scroll sync - Avantages : simple; Inconvenients : desynchronisation
+2. Synchroniser scrollTop/scrollLeft - Avantages : alignement stable; Inconvenients : code additionnel
+
+**Choix retenu** : Option 2
+**Justification** : Qualite d'usage et precision visuelle.
+**Impact** : Hook useEffect + handler onScroll.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: +20, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~9s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajuster le scroll horizontal si besoin (mots longs)
+2. [ ] Optimiser la perf sur mobile
+3. [ ] Ajouter un toggle feedback temps reel
+
+### 💭 Notes
+Le scroll est synchronise sur chaque onScroll et a chaque update du texte.
+
+---
+
+## 2026-02-06 00:24 - Overlay inline sur Textarea
+
+### 🎯 Objectif
+Afficher le feedback directement sur le texte saisi via un overlay synchronise avec la Textarea.
+
+### ✅ Realisations
+- ✅ Overlay inline par-dessus la Textarea avec surbrillance par token
+- ✅ Synchronisation des styles (taille, line-height, padding)
+- ✅ Feedback en temps reel conserve (accents/ponctuation/score)
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Overlay synchronise au lieu d'une textarea custom
+**Contexte** : Besoin d'un surlignage inline sans perdre la saisie native.
+**Options considerees** :
+1. Textarea custom contenteditable - Avantages : surlignage direct; Inconvenients : fragile
+2. Overlay + Textarea transparente - Avantages : fiable; Inconvenients : alignement a maintenir
+
+**Choix retenu** : Option 2
+**Justification** : Saisie native stable avec feedback visuel precis.
+**Impact** : Ajout d'un overlay absolut avec tokens.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: +90, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~9s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajuster l'overlay pour les retours a la ligne auto
+2. [ ] Optimiser l'affichage mobile (tailles + scrolling)
+3. [ ] Ajouter des hints visuels pour les accents
+
+### 💭 Notes
+Overlay aligne les tokens avec une Textarea transparente et caret visible.
+
+---
+
+## 2026-02-06 00:14 - Surlignage inline dictee
+
+### 🎯 Objectif
+Integrer le feedback par mot directement dans la zone de saisie pour un retour en temps reel.
+
+### ✅ Realisations
+- ✅ Surlignage inline par mot (exact, accent, erreur, manquant)
+- ✅ Feedback affiche en temps reel sous la zone de saisie
+- ✅ Boutons Valider/Continuer conserves avec feedback inline
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Feedback inline plutot que panneau separe
+**Contexte** : Besoin d'un retour immediat sans changer de zone visuelle.
+**Options considerees** :
+1. Panneau de correction separe - Avantages : lisible; Inconvenients : detour visuel
+2. Feedback inline sous la saisie - Avantages : immediat; Inconvenients : UI plus dense
+
+**Choix retenu** : Option 2
+**Justification** : Confort d'usage et correction en temps reel.
+**Impact** : Remplacement du panneau par un rendu inline.
+
+### 🐛 Problemes rencontres et resolutions
+
+#### Probleme 1 : currentSentence utilise avant declaration
+**Symptomes** : Erreur TypeScript pendant le build.
+**Cause racine** : Calcul useMemo avant la definition de currentSentence.
+**Solution appliquee** : Reordonner les declarations.
+**Justification** : Dependances correctes pour le hook.
+**Validation** : next build OK.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: ~40, Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~10s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajouter un retour visuel directement dans la ligne de texte (surbrillance mot-a-mot)
+2. [ ] Ajuster la densite du feedback pour mobile
+3. [ ] Conserver la progression locale avant Supabase
+
+### 💭 Notes
+Le scoring fin et la progression locale sont preserves.
+
+---
+
+## 2026-02-05 23:00 - Feedback dictee, scoring affine, progression locale
+
+### 🎯 Objectif
+Affiner l'ecran 8 avec un feedback visuel par mot, un scoring plus fin (ponctuation/accents) et un panel de progression locale.
+
+### ✅ Realisations
+- ✅ Feedback visuel par mot avec statuts (exact, accent, erreur, manquant)
+- ✅ Scoring affine prenant en compte ponctuation et accents
+- ✅ Panel de progression locale (tentatives, moyenne, dernier score, temps)
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Scoring par tokens (mots + ponctuation)
+**Contexte** : Besoin d'un scoring plus representatif sans IA.
+**Options considerees** :
+1. Score par mots uniquement - Avantages : simple; Inconvenients : ignore ponctuation
+2. Tokens mots + ponctuation - Avantages : precision; Inconvenients : logique supplementaire
+
+**Choix retenu** : Option 2
+**Justification** : Meilleure finesse pedagogique.
+**Impact** : Score combine (exact/accents/ponctuation).
+
+#### Decision 2 : Feedback visuel par mot
+**Contexte** : Besoin d'un retour clair pour l'apprenant.
+**Options considerees** :
+1. Feedback texte brut - Avantages : rapide; Inconvenients : peu lisible
+2. Badges colores par mot - Avantages : lisibilite; Inconvenients : plus d'UI
+
+**Choix retenu** : Option 2
+**Justification** : Clarte et orientation pedagogique.
+**Impact** : Ajout d'un panneau de correction.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 1, Lignes ajoutees: +188 (dictation), Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~6s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajuster les phrases selon la difficulte (longueur, vocabulaire)
+2. [ ] Ajouter un feedback specifique sur la ponctuation
+3. [ ] Relier la progression a Supabase (plus tard)
+
+### 💭 Notes
+La progression reste locale et non persistante en attendant Supabase.
+
+---
+
+## 2026-02-05 22:53 - Ecran 8 affine et GS active
+
+### 🎯 Objectif
+Affiner l'ecran 8 (dictee) avec correction automatique, activer GS, et aligner le curriculum.
+
+### ✅ Realisations
+- ✅ Ecran 8 enrichi avec scoring automatique et phrases adaptees
+- ✅ GS ajoute comme niveau explicite dans le curriculum
+- ✅ Routes mises a jour pour accepter GS
+- ✅ Liens d'accueil mis a jour pour GS/CP/CE1
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Ajouter GS dans le curriculum centralise
+**Contexte** : Activation explicite du niveau maternelle.
+**Options considerees** :
+1. Laisser GS implicite - Avantages : rapide; Inconvenients : incoherent avec navigation
+2. Ajouter GS dans le curriculum - Avantages : source de verite; Inconvenients : ajustements mapping
+
+**Choix retenu** : Option 2
+**Justification** : Alignement complet avec l'architecture data-driven.
+**Impact** : Niveaux primaire et mapping routes mis a jour.
+
+#### Decision 2 : Scoring automatique simple par mots
+**Contexte** : Besoin d'un scoring rapide sans IA.
+**Options considerees** :
+1. Comparaison stricte phrase entiere - Avantages : simple; Inconvenients : trop rigide
+2. Scoring par mots normalises - Avantages : tolerant; Inconvenients : approximatif
+
+**Choix retenu** : Option 2
+**Justification** : Meilleure tolerance pour les apprenants.
+**Impact** : Score calcule par phrase puis moyenne.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers modifies: 8, Lignes ajoutees: +200 (dictation), Types `any`: 0
+**Qualite** : TS errors: 0, Build time: ~8s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/components/exercises/DictationExercise.tsx (modifie)
+apps/lecture/app/page.tsx (modifie)
+apps/lecture/components/WelcomeScreen.tsx (modifie)
+apps/lecture/components/LevelSelector.tsx (modifie)
+apps/lecture/app/levels/[level]/page.tsx (modifie)
+apps/lecture/app/levels/[level]/phonemes/[phonemeId]/page.tsx (modifie)
+apps/lecture/app/levels/[level]/phonemes/[phonemeId]/exercises/[exercise]/page.tsx (modifie)
+packages/types/curriculum.ts (modifie)
+packages/curriculum/curriculum.ts (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Ajouter une evaluation plus fine (orthographe/ponctuation)
+2. [ ] Relier la progression a Supabase (scores, temps, maitrise)
+3. [ ] Ajouter le feedback visuel detaille pour la dictee
+
+### 💭 Notes
+Le scoring est base sur une normalisation simple et une comparaison par mots.
+
+---
+
+## 2026-02-05 22:45 - Liens niveaux, ecran 8 et mapping curriculum
+
+### 🎯 Objectif
+Ajouter des liens d'accueil vers /levels/cp et /levels/ce1, integrer l'ecran 8 (dictee) et brancher le curriculum packages/ sur les routes.
+
+### ✅ Realisations
+- ✅ Accueil oriente routes (liens CP/CE1) et GS desactive
+- ✅ Ajout de l'exercice 8 (dictee) et activation dans la liste
+- ✅ Mapping niveaux via packages/curriculum (track initiation-lecture-ecriture)
+- ✅ Validation des phonemes par niveau dans les routes dynamiques
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Mapper les niveaux depuis packages/curriculum
+**Contexte** : Besoin d'un parcours conforme au curriculum centralise.
+**Options considerees** :
+1. Niveau en dur (cp/ce1) - Avantages : simple; Inconvenients : derive du curriculum
+2. Lire levelsByCycle depuis packages/curriculum - Avantages : source unique; Inconvenients : plus de logique
+
+**Choix retenu** : Option 2
+**Justification** : Conformite monorepo et source de verite.
+**Impact** : Validation des niveaux et des phonemes par route.
+
+#### Decision 2 : Ajouter l'ecran 8 comme exercice route
+**Contexte** : Cahier des charges et besoin d'encodage de phrases.
+**Options considerees** :
+1. Laisser l'ecran 8 en placeholder - Avantages : rapide; Inconvenients : non conforme
+2. Ajouter un exercice de dictee minimal - Avantages : route fonctionnelle; Inconvenients : enrichissement a faire
+
+**Choix retenu** : Option 2
+**Justification** : Respect des specs et activation du parcours.
+**Impact** : Nouvelle route /exercises/dictation.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : OK (via next build)
+**Tests Build** : OK (next build)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers crees: 1 (DictationExercise), Fichiers modifies: 9+, Lignes ajoutees: +144 (dictation)
+**Qualite** : TS errors: 0, Build time: ~8s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/app/page.tsx (modifie)
+apps/lecture/components/WelcomeScreen.tsx (modifie)
+apps/lecture/components/LevelSelector.tsx (modifie)
+apps/lecture/components/exercises/DictationExercise.tsx (cree)
+apps/lecture/components/exercises/ExerciseSelector.tsx (modifie)
+apps/lecture/app/levels/[level]/page.tsx (modifie)
+apps/lecture/app/levels/[level]/phonemes/[phonemeId]/page.tsx (modifie)
+apps/lecture/app/levels/[level]/phonemes/[phonemeId]/exercises/[exercise]/page.tsx (modifie)
+apps/lecture/app/levels/[level]/phonemes/[phonemeId]/exercises/[exercise]/ExerciseClient.tsx (modifie)
+packages/curriculum/index.ts (modifie)
+packages/curriculum/curriculum.ts (modifie)
+packages/curriculum/navigation.ts (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Affiner l'ecran 8 (evaluation automatique, phrases adapteees)
+2. [ ] Relier le parcours aux donnees Supabase (progression)
+3. [ ] Ajouter GS si le curriculum l'autorise
+
+### 💭 Notes
+GS desactive a l'accueil pour rester conforme au track CP/CE1.
+
+---
+
+## 2026-02-05 22:33 - Build apps/lecture, assets et routes App Router
+
+### 🎯 Objectif
+Verifier la compilation de apps/lecture, migrer les assets publics, et aligner les routes App Router par niveau/activite.
+
+### ✅ Realisations
+- ✅ Build Next.js execute et rendu OK apres corrections
+- ✅ Ajout des routes App Router (levels/phonemes/exercises)
+- ✅ Migration des assets publics vers apps/lecture/public
+- ✅ Corrections de compatibilite (calendar, chart, resizable, NavLink)
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Routes dynamiques App Router par niveau/phoneme/exercice
+**Contexte** : Besoin d'un parcours explicite par niveau et activite.
+**Options considerees** :
+1. Garder un flux stateful unique - Avantages : simple; Inconvenients : pas d'URL partageable
+2. Ajouter des routes dynamiques - Avantages : navigation explicite; Inconvenients : fichiers supplementaires
+
+**Choix retenu** : Option 2
+**Justification** : Alignement sur l'architecture App Router et navigation shareable.
+**Impact** : Creation de pages dynamiques et wrappers client.
+
+#### Decision 2 : Standardiser les assets dans apps/lecture/public
+**Contexte** : Les assets etaient dans le projet Vite initial.
+**Options considerees** :
+1. Laisser les assets dans mon-premier-cahier - Avantages : zero effort; Inconvenients : non deploye
+2. Migrer vers apps/lecture/public - Avantages : standard Next.js; Inconvenients : copie initiale
+
+**Choix retenu** : Option 2
+**Justification** : Assets servis nativement par Next.js.
+**Impact** : Copie des fichiers statiques (hors Docs).
+
+### 🐛 Problemes rencontres et resolutions
+
+#### Probleme 1 : Erreur Tailwind config introuvable
+**Symptomes** : Build echoue sur apps/lecture/app/globals.css.
+**Cause racine** : Chemin relatif incorrect vers tailwind.config.ts.
+**Solution appliquee** : Correction du chemin a ../../../tailwind.config.ts.
+**Justification** : Alignement sur la structure monorepo.
+**Validation** : Build relance.
+
+#### Probleme 2 : React Router dans NavLink
+**Symptomes** : TypeScript error "react-router-dom" manquant.
+**Cause racine** : Composant NavLink issu de Vite.
+**Solution appliquee** : Remplacement par Next.js Link + usePathname.
+**Justification** : Compatibilite App Router.
+**Validation** : Build relance.
+
+#### Probleme 3 : Incompatibilites UI (react-day-picker, recharts, resizable)
+**Symptomes** : Erreurs TypeScript dans calendar/chart/resizable.
+**Cause racine** : Versions lib differente (API types v9/v3/v4).
+**Solution appliquee** : Adaptation des props et types, assouplissement des types.
+**Justification** : Build stable sans changer les usages.
+**Validation** : Build Next.js termine avec succes.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : Lances via next build (OK)
+**Tests Build** : next build (OK)
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers crees: 6 (routes) + 3 assets, Fichiers modifies: 5 (UI fixes), Lignes ajoutees: +197 (routes)
+**Qualite** : TS errors: 0 (build), Build time: 7-11s
+
+### 📁 Fichiers modifies
+```
+apps/lecture/app/levels/[level]/** (cree)
+apps/lecture/public/* (migre)
+apps/lecture/components/NavLink.tsx (modifie)
+apps/lecture/components/ui/calendar.tsx (modifie)
+apps/lecture/components/ui/chart.tsx (modifie)
+apps/lecture/components/ui/resizable.tsx (modifie)
+apps/lecture/app/globals.css (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Verifier la navigation entre routes (links depuis l'accueil)
+2. [ ] Mapper le curriculum packages/ vers les routes de lecture
+3. [ ] Ajouter l'ecran 8 (dictee) dans les routes exercises
+
+### 💭 Notes
+Les assets migres sont limités aux fichiers du public (hors Docs). Build OK apres corrections.
+
+---
+
+## 2026-02-05 22:15 - Imports, data package et routes App Router
+
+### 🎯 Objectif
+Verifier les imports/alias pour apps/lecture, preparer la couche data/curriculum dans packages/, et finaliser les ajustements Next.js (routes et boundaries).
+
+### ✅ Realisations
+- ✅ Preparation de packages/lecture-curriculum (donnees phonemes et exports)
+- ✅ Mise a jour des imports vers @packages/lecture-curriculum
+- ✅ Ajout des alias @packages dans les tsconfig racine et apps/lecture
+- ✅ Ajout des fichiers Next.js requis (next-env, not-found)
+- ✅ Suppression de la duplication de data locale dans apps/lecture
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Deplacer les phonemes dans packages/
+**Contexte** : Besoin d'une couche data partageable avant portage UI complet.
+**Options considerees** :
+1. Conserver apps/lecture/data - Avantages : simplicite; Inconvenients : pas partageable
+2. Migrer vers packages/lecture-curriculum - Avantages : data centralisee; Inconvenients : mise a jour des imports
+
+**Choix retenu** : Option 2
+**Justification** : Conformite monorepo et reutilisabilite.
+**Impact** : Alias @packages + refactor imports.
+
+#### Decision 2 : Ajouter not-found App Router
+**Contexte** : Remplacer NotFound React Router par l'equivalent Next.js.
+**Options considerees** :
+1. Aucun not-found - Avantages : moins de fichiers; Inconvenients : UX degradee
+2. Ajouter app/not-found.tsx - Avantages : routing Next.js natif; Inconvenients : fichier additionnel
+
+**Choix retenu** : Option 2
+**Justification** : UX standard et gestion 404 propre.
+**Impact** : Page 404 statique, sans dependance react-router.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : Non executes
+**Tests Build** : Non executes
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers crees: 4, Fichiers modifies: 7, Fichiers supprimes: 1, Lignes: +337/-317 (hors fichiers non suivis par git)
+**Qualite** : TS errors: Non verifie, Build time: Non verifie
+
+### 📁 Fichiers modifies
+```
+packages/lecture-curriculum/phonemes.ts (cree)
+packages/lecture-curriculum/index.ts (cree)
+apps/lecture/next-env.d.ts (cree)
+apps/lecture/app/not-found.tsx (cree)
+apps/lecture/app/page.tsx (modifie)
+apps/lecture/components/PhonemeGrid.tsx (modifie)
+apps/lecture/components/exercises/ExerciseSelector.tsx (modifie)
+apps/lecture/components/exercises/AudioExercise.tsx (modifie)
+apps/lecture/components/exercises/PositionExercise.tsx (modifie)
+apps/lecture/tsconfig.json (modifie)
+tsconfig.json (modifie)
+apps/lecture/data/phonemes.ts (supprime)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Verifier la compilation de apps/lecture et corriger les imports restant
+2. [ ] Migrer les assets publics si besoin (images/sons)
+3. [ ] Aligner la navigation App Router avec les routes finales
+
+### 💭 Notes
+Aucun asset image/son reference explicite detecte dans le code migre.
+
+---
+
+## 2026-02-05 19:01 - Initialisation apps/lecture et debut de migration
+
+### 🎯 Objectif
+Initialiser apps/lecture dans enaa-francais-app et demarrer la migration technique depuis mon-premier-cahier.
+
+### ✅ Realisations
+- ✅ Creation du squelette Next.js pour apps/lecture (layout, providers, globals, page)
+- ✅ Copie des composants, data, hooks et lib depuis le projet Vite
+- ✅ Ajout de Turborepo et workspaces pour la gestion multi-apps
+- ✅ Extension Tailwind pour les tokens et animations de l'app lecture
+
+### 🏗️ Architecture et decisions techniques
+
+#### Decision 1 : Initialiser apps/lecture comme app dediee
+**Contexte** : Necessite d'isoler l'app lecture dans le monorepo sans perturber l'app existante.
+**Options considerees** :
+1. Reutiliser l'app root - Avantages : moins de duplication; Inconvenients : confusion multi-apps
+2. Creer apps/lecture - Avantages : separation claire; Inconvenients : maintenance additionnelle
+
+**Choix retenu** : Option 2
+**Justification** : Alignement avec l'architecture monorepo et migration progressive.
+**Impact** : Nouvel espace applicatif, migration par lots possible.
+
+#### Decision 2 : Activer Turborepo des le demarrage
+**Contexte** : Besoin d'orchestration multi-apps et scripts cibles.
+**Options considerees** :
+1. Sans tooling - Avantages : simplicite immediate; Inconvenients : dette future
+2. Turborepo - Avantages : orchestration standard; Inconvenients : setup initial
+
+**Choix retenu** : Option 2
+**Justification** : Standard monorepo et execution ciblee (apps/lecture).
+**Impact** : Ajout de turbo.json et scripts dedies.
+
+### 🐛 Problemes rencontres et resolutions
+Aucun probleme technique rencontre.
+
+### 🔧 Modifications substantielles
+Aucune modification non prevue.
+
+### ✅ Validation et tests
+**Tests TypeScript** : Non executes
+**Tests Build** : Non executes
+**Tests fonctionnels** : Non executes
+
+### 📊 Metriques
+**Code** : Fichiers crees: 70, Fichiers modifies: 2, Lignes: +6447/-0 (hors changements preexistants), Types `any`: 0
+**Qualite** : TS errors: Non verifie, Build time: Non verifie
+
+### 📁 Fichiers modifies
+```
+apps/lecture/** (cree)
+turbo.json (cree)
+package.json (modifie)
+tailwind.config.ts (modifie)
+```
+
+### 🚀 Prochaines etapes
+1. [ ] Valider la compilation de apps/lecture et corriger les imports relatifs si besoin
+2. [ ] Ajouter scripts de dev/build racine si requis
+3. [ ] Migrer les assets publics (images, sons)
+
+### 💭 Notes
+Les metriques n'incluent pas les fichiers preexistants non lies a cette session.
+
+---
+
 ## 2026-02-04 12:20 - Ajout du module Fables et poésie
 
 ### 🎯 Objectif

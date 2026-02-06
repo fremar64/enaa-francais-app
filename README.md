@@ -1,3 +1,17 @@
+## Documentation monorepo
+
+- Index des documents : [doc_monorepo/INDEX_DOCS.md](doc_monorepo/INDEX_DOCS.md)
+
+## Sommaire
+
+- [Documentation monorepo](#documentation-monorepo)
+- [Getting Started](#getting-started)
+- [Learn More](#learn-more)
+- [Deploy on Vercel](#deploy-on-vercel)
+- [Intégration CI/CD et Déploiement Automatique](#-intégration-cicd-et-déploiement-automatique)
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

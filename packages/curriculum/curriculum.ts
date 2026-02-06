@@ -1,4 +1,4 @@
-import type { Cycle, Domain, Level, Track } from "@/packages/types/curriculum";
+import type { Cycle, Domain, Level, Track } from "../types/curriculum";
 
 const createLevel = (
   id: Level["id"],
@@ -36,6 +36,7 @@ export const CYCLES: Cycle[] = [
     id: "primaire",
     label: "Primaire",
     levels: [
+      createLevel("gs", "Grande Section", 0, 10, "Pré-A1"),
       createLevel("cp", "CP", 0, 20, "Pré-A1"),
       createLevel("ce1", "CE1", 15, 30, "A1.0"),
       createLevel("ce2", "CE2", 25, 40, "A1.1"),
@@ -153,7 +154,7 @@ export const TRACKS: Track[] = [
     cycles: ["primaire"],
     available: true,
     levelsByCycle: {
-      primaire: ["cp", "ce1"]
+      primaire: ["gs", "cp", "ce1"]
     }
   }
 ];

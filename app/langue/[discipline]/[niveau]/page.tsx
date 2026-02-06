@@ -21,17 +21,19 @@ const LESSONS = [
 ];
 
 type PageProps = {
-  params: {
+  params: Promise<{
     discipline: string;
     niveau: string;
-  };
+  }>;
 };
 
-export default function LangueDisciplinePage({ params }: PageProps) {
-  const track = getTrackById(params.discipline);
-  const level = getLevelByIdGlobal(params.niveau);
+export default async function LangueDisciplinePage({ params }: PageProps) {
+  const { discipline, niveau } = await params;
+  const track = getTrackById(discipline);
+  const level = getLevelByIdGlobal(niveau);
   const disciplineLabel = track?.label ?? "Discipline";
-  const niveauLabel = level?.label ?? params.niveau.toUpperCase();
+  const niveauParam = niveau ?? "";
+  const niveauLabel = level?.label ?? (niveauParam ? niveauParam.toUpperCase() : "Niveau");
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,7 +62,7 @@ export default function LangueDisciplinePage({ params }: PageProps) {
           {LESSONS.map((lesson) => (
             <Link
               key={lesson.id}
-              href={`/langue/${params.discipline}/${params.niveau}/lecons/${lesson.id}`}
+              href={`/langue/${discipline}/${niveau}/lecons/${lesson.id}`}
               className="group rounded-xl border p-5 transition hover:border-primary"
             >
               <div className="flex items-center justify-between">

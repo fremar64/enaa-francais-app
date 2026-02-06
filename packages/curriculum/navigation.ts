@@ -1,5 +1,5 @@
-import type { Cycle, Domain, Level, NavigationSelection, Track } from "@/packages/types/curriculum";
-import { CYCLES, DOMAINS, TRACKS } from "@/packages/curriculum/curriculum";
+import type { Cycle, Domain, Level, NavigationSelection, Track } from "../types/curriculum";
+import { CYCLES, DOMAINS, TRACKS } from "./curriculum";
 
 export const getDomainById = (id?: string): Domain | undefined =>
   DOMAINS.find((domain) => domain.id === id);

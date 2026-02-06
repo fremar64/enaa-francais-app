@@ -1,4 +1,4 @@
-export { DOMAINS, CYCLES, TRACKS } from "@/packages/curriculum/curriculum";
+export { DOMAINS, CYCLES, TRACKS } from "./curriculum";
 export {
   getActivityRoute,
   getCycleById,
@@ -10,11 +10,11 @@ export {
   getLevelsByTrackAndCycle,
   getTrackById,
   getTracksByDomain
-} from "@/packages/curriculum/navigation";
+} from "./navigation";
 export type {
   Cycle,
   Domain,
   Level,
   NavigationSelection,
   Track
-} from "@/packages/types/curriculum";
+} from "../types/curriculum";

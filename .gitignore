@@ -19,6 +19,7 @@ release_assets/build-output.tar.gz
 # next.js
 /.next/
 /out/
+apps/lecture/.next/
 
 # production
 /build
@@ -26,6 +27,7 @@ release_assets/build-output.tar.gz
 # misc
 .DS_Store
 *.pem
+*.dump
 
 # debug
 npm-debug.log*

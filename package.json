@@ -2,8 +2,13 @@
   "name": "chansons-francaises-nextjs",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev",
+    "dev:lecture": "turbo run dev --filter=lecture",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -86,6 +91,7 @@
     "eslint-config-next": "16.1.1",
     "jsdom": "^27.4.0",
     "tailwindcss": "^4",
+    "turbo": "^2.3.0",
     "ts-node": "^1.7.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.17"
