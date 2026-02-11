@@ -1,23 +1,6 @@
-import { notFound } from "next/navigation";
-import { getCycleById, getLevelsByTrackAndCycle, getTrackById } from "@packages/curriculum/navigation";
-import type { LevelId } from "@packages/types/curriculum";
-import { LevelClient } from "./LevelClient";
-
-const phonemeLevelMap: Record<LevelId, "GS" | "CP" | "CE1"> = {
-  gs: "GS",
-  cp: "CP",
-  ce1: "CE1",
-  ce2: "CE1",
-  cm1: "CE1",
-  cm2: "CE1",
-  "6e": "CE1",
-  "5e": "CE1",
-  "4e": "CE1",
-  "3e": "CE1",
-  "2nde": "CE1",
-  "1re": "CE1",
-  terminale: "CE1",
-};
+import { notFound, redirect } from "next/navigation";
+import { getCycleById, getLevelsByTrackAndCycle, getTrackById, buildActivityUrl } from "@packages/curriculum/navigation";
+import { getPhonemeActivitiesByLevelId } from "@packages/activities/lecture";
 
 export default async function LevelPage({
   params,
@@ -34,14 +17,25 @@ export default async function LevelPage({
   const levels = getLevelsByTrackAndCycle(track, cycle);
   const selectedLevel = levels.find((item) => item.id === levelSlug);
 
-  if (!selectedLevel || !phonemeLevelMap[selectedLevel.id]) {
+  if (!selectedLevel) {
     notFound();
   }
 
-  return (
-    <LevelClient
-      level={phonemeLevelMap[selectedLevel.id]}
-      levelSlug={selectedLevel.id}
-    />
+  const activities = getPhonemeActivitiesByLevelId(selectedLevel.id);
+  const firstActivity = activities[0];
+
+  if (!firstActivity) {
+    notFound();
+  }
+
+  const content = firstActivity.createContent();
+  redirect(
+    buildActivityUrl({
+      domainId: "langue",
+      trackId: "initiation-lecture-ecriture",
+      levelId: selectedLevel.id,
+      activityType: "phoneme",
+      params: { phonemeId: String(content.phonemeId) }
+    })
   );
 }

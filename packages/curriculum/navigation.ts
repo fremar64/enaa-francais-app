@@ -74,3 +74,39 @@ export const getActivityRoute = (selection: NavigationSelection): string | null 
 
   return `/langue/${selection.trackId}/${selection.levelId}`;
 };
+
+export const getDefaultActivityType = (trackId?: string): string | null => {
+  if (!trackId) {
+    return null;
+  }
+
+  if (trackId === "initiation-lecture-ecriture") {
+    return "phoneme";
+  }
+
+  if (trackId === "conjugaison") {
+    return "verbe";
+  }
+
+  return null;
+};
+
+export type ActivityUrlConfig = {
+  domainId: string;
+  trackId: string;
+  levelId: string;
+  activityType: string;
+  params?: Record<string, string>;
+};
+
+export const buildActivityUrl = ({
+  domainId,
+  trackId,
+  levelId,
+  activityType,
+  params
+}: ActivityUrlConfig) => {
+  const query = params ? new URLSearchParams(params).toString() : "";
+  const base = `/domain/${domainId}/track/${trackId}/level/${levelId}/activity/${activityType}`;
+  return query ? `${base}?${query}` : base;
+};

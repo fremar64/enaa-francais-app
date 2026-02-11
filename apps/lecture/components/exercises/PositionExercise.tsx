@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import type { Phoneme } from '@packages/lecture-curriculum';
+import type { LectureActivityContent } from '@packages/lecture-curriculum';
 import { Volume2, ArrowLeft, Star, RefreshCw, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 interface PositionExerciseProps {
-  phoneme: Phoneme;
+  phoneme: LectureActivityContent;
   onComplete: (score: number) => void;
   onBack: () => void;
+  onAttempt?: () => void;
+  onError?: (code: string) => void;
+  onSuccess?: () => void;
 }
 
 type PhonemePosition = 'start' | 'middle' | 'end';
@@ -20,14 +23,14 @@ interface PositionQuestion {
 }
 
 // Génère les questions basées sur le phonème
-const generateQuestions = (phoneme: Phoneme): PositionQuestion[] => {
+const generateQuestions = (phoneme: LectureActivityContent): PositionQuestion[] => {
   const wordData = getWordPositionData(phoneme);
   // Mélanger et prendre 8 questions
   return wordData.sort(() => Math.random() - 0.5).slice(0, 8);
 };
 
 // Base de données des mots avec leur position de phonème
-const getWordPositionData = (phoneme: Phoneme): PositionQuestion[] => {
+const getWordPositionData = (phoneme: LectureActivityContent): PositionQuestion[] => {
   const positionData: Record<string, PositionQuestion[]> = {
     a: [
       { word: 'arbre', syllables: ['ar', 'bre'], position: 'start' },
@@ -291,6 +294,9 @@ export const PositionExercise = ({
   phoneme,
   onComplete,
   onBack,
+  onAttempt,
+  onError,
+  onSuccess,
 }: PositionExerciseProps) => {
   const [questions] = useState(() => generateQuestions(phoneme));
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -325,6 +331,7 @@ export const PositionExercise = ({
 
   const handleAnswer = (position: PhonemePosition) => {
     if (answered) return;
+    onAttempt?.();
 
     const isCorrect = position === currentQuestion.position;
     setAnswered(true);
@@ -333,6 +340,8 @@ export const PositionExercise = ({
 
     if (isCorrect) {
       setScore((s) => s + 1);
+    } else {
+      onError?.("incorrect");
     }
 
     // Passage automatique après un délai
@@ -345,6 +354,7 @@ export const PositionExercise = ({
       } else {
         setIsComplete(true);
         const finalScore = isCorrect ? score + 1 : score;
+        onSuccess?.();
         onComplete(Math.round((finalScore / questions.length) * 100));
       }
     }, 2000);

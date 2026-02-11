@@ -17,12 +17,33 @@ export type LevelId =
   | "1re"
   | "terminale";
 
+export type RuleId =
+  | "unlock-sequential-levels"
+  | "unlock-phoneme-sequence"
+  | "unlock-level-promotion"
+  | "validation-mastery-threshold"
+  | "validation-phoneme-foundation"
+  | "validation-progressive-mastery"
+  | "validation-competency-portfolio"
+  | "remediation-phoneme-reinforcement"
+  | "remediation-phoneme-focus"
+  | "remediation-targeted-practice"
+  | "remediation-consolidation-loop";
+
+export type RuleRef = {
+  id: RuleId;
+  params?: Record<string, unknown>;
+};
+
 export interface Level {
   id: LevelId;
   label: string;
   cassLevelUri: string;
   scoreRange: [number, number];
   cecrlProjection: string;
+  unlockRule?: RuleRef;
+  validationRule?: RuleRef;
+  remediationRule?: RuleRef;
 }
 
 export interface Cycle {
@@ -39,6 +60,9 @@ export interface Track {
   cycles: CycleId[];
   available: boolean;
   levelsByCycle?: Partial<Record<CycleId, LevelId[]>>;
+  unlockRule?: RuleRef;
+  validationRule?: RuleRef;
+  remediationRule?: RuleRef;
 }
 
 export interface Domain {

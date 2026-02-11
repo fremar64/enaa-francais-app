@@ -1,24 +1,6 @@
-import { notFound } from "next/navigation";
-import { getPhonemeById, getPhonemesByLevel } from "@packages/lecture-curriculum";
-import { getCycleById, getLevelsByTrackAndCycle, getTrackById } from "@packages/curriculum/navigation";
-import type { LevelId } from "@packages/types/curriculum";
-import { PhonemeClient } from "./PhonemeClient";
-
-const phonemeLevelMap: Record<LevelId, "GS" | "CP" | "CE1"> = {
-  gs: "GS",
-  cp: "CP",
-  ce1: "CE1",
-  ce2: "CE1",
-  cm1: "CE1",
-  cm2: "CE1",
-  "6e": "CE1",
-  "5e": "CE1",
-  "4e": "CE1",
-  "3e": "CE1",
-  "2nde": "CE1",
-  "1re": "CE1",
-  terminale: "CE1",
-};
+import { notFound, redirect } from "next/navigation";
+import { getPhonemeActivityById } from "@packages/activities/lecture";
+import { getCycleById, getLevelsByTrackAndCycle, getTrackById, buildActivityUrl } from "@packages/curriculum/navigation";
 
 export default async function PhonemePage({
   params,
@@ -35,7 +17,7 @@ export default async function PhonemePage({
   const levels = getLevelsByTrackAndCycle(track, cycle);
   const selectedLevel = levels.find((item) => item.id === levelSlug);
 
-  if (!selectedLevel || !phonemeLevelMap[selectedLevel.id]) {
+  if (!selectedLevel) {
     notFound();
   }
 
@@ -44,17 +26,18 @@ export default async function PhonemePage({
     notFound();
   }
 
-  const phoneme = getPhonemeById(phonemeId);
-  if (!phoneme) {
+  const activity = getPhonemeActivityById(phonemeId);
+  if (!activity || activity.metadata.levelId !== selectedLevel.id) {
     notFound();
   }
 
-  const allowedPhonemes = getPhonemesByLevel(phonemeLevelMap[selectedLevel.id]);
-  const isAllowed = allowedPhonemes.some((item) => item.id === phonemeId);
-
-  if (!isAllowed) {
-    notFound();
-  }
-
-  return <PhonemeClient levelSlug={levelSlug} phoneme={phoneme} />;
+  redirect(
+    buildActivityUrl({
+      domainId: "langue",
+      trackId: "initiation-lecture-ecriture",
+      levelId: selectedLevel.id,
+      activityType: "phoneme",
+      params: { phonemeId: String(phonemeId) }
+    })
+  );
 }

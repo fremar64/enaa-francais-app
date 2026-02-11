@@ -1,25 +1,30 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PhonemeCard } from './PhonemeCard';
-import { getPhonemesByLevel, type Phoneme } from '@packages/lecture-curriculum';
+import type { LectureActivityDefinition } from '@packages/lecture-curriculum';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface PhonemeGridProps {
-  level: 'GS' | 'CP' | 'CE1';
-  onSelectPhoneme: (phoneme: Phoneme) => void;
+  levelLabel: string;
+  activities: LectureActivityDefinition[];
+  onSelectPhoneme: (activity: LectureActivityDefinition) => void;
   onBack: () => void;
 }
 
-export const PhonemeGrid = ({ level, onSelectPhoneme, onBack }: PhonemeGridProps) => {
-  const phonemes = getPhonemesByLevel(level);
+export const PhonemeGrid = ({ levelLabel, activities, onSelectPhoneme, onBack }: PhonemeGridProps) => {
+  const items = useMemo(
+    () => activities.map((definition) => ({ definition, content: definition.createContent() })),
+    [activities]
+  );
+  const phonemes = useMemo(() => items.map((item) => item.content), [items]);
   
   // Simulation de progression - dans une vraie app, viendrait de la base de données
   const [progress] = useState<Record<number, number>>(() => {
     const prog: Record<number, number> = {};
     phonemes.forEach((p, i) => {
-      if (i < 3) prog[p.id] = 100;
-      else if (i < 5) prog[p.id] = Math.floor(Math.random() * 70) + 10;
-      else prog[p.id] = 0;
+      if (i < 3) prog[p.phonemeId] = 100;
+      else if (i < 5) prog[p.phonemeId] = Math.floor(Math.random() * 70) + 10;
+      else prog[p.phonemeId] = 0;
     });
     return prog;
   });
@@ -27,21 +32,10 @@ export const PhonemeGrid = ({ level, onSelectPhoneme, onBack }: PhonemeGridProps
   const isUnlocked = (index: number) => {
     if (index === 0) return true;
     // Un phonème est débloqué si le précédent a au moins 50% de progression
-    return progress[phonemes[index - 1]?.id] >= 50;
+    return progress[phonemes[index - 1]?.phonemeId] >= 50;
   };
 
   const phases = [...new Set(phonemes.map((p) => p.phase))];
-
-  const getLevelLabel = () => {
-    switch (level) {
-      case 'GS':
-        return 'Grande Section';
-      case 'CP':
-        return 'Cours Préparatoire';
-      case 'CE1':
-        return 'CE1';
-    }
-  };
 
   const getPhaseLabel = (phase: number) => {
     switch (phase) {
@@ -74,7 +68,7 @@ export const PhonemeGrid = ({ level, onSelectPhoneme, onBack }: PhonemeGridProps
         </Button>
         <div>
           <h1 className="text-2xl md:text-3xl font-fredoka font-bold text-foreground">
-            {getLevelLabel()}
+            {levelLabel}
           </h1>
           <p className="text-muted-foreground">
             Choisis un son à apprendre !
@@ -85,7 +79,7 @@ export const PhonemeGrid = ({ level, onSelectPhoneme, onBack }: PhonemeGridProps
       {/* Grille par phase */}
       <div className="space-y-8">
         {phases.map((phase) => {
-          const phasePhonemes = phonemes.filter((p) => p.phase === phase);
+          const phaseItems = items.filter((item) => item.content.phase === phase);
           const globalStartIndex = phonemes.findIndex((p) => p.phase === phase);
 
           return (
@@ -94,16 +88,16 @@ export const PhonemeGrid = ({ level, onSelectPhoneme, onBack }: PhonemeGridProps
                 {getPhaseLabel(phase)}
               </h2>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                {phasePhonemes.map((phoneme, localIndex) => {
+                {phaseItems.map((item, localIndex) => {
                   const globalIndex = globalStartIndex + localIndex;
                   return (
                     <PhonemeCard
-                      key={phoneme.id}
-                      phoneme={phoneme}
+                      key={item.content.phonemeId}
+                      phoneme={item.content}
                       isUnlocked={isUnlocked(globalIndex)}
-                      isCompleted={progress[phoneme.id] === 100}
-                      progress={progress[phoneme.id] || 0}
-                      onClick={() => isUnlocked(globalIndex) && onSelectPhoneme(phoneme)}
+                      isCompleted={progress[item.content.phonemeId] === 100}
+                      progress={progress[item.content.phonemeId] || 0}
+                      onClick={() => isUnlocked(globalIndex) && onSelectPhoneme(item.definition)}
                     />
                   );
                 })}

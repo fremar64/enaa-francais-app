@@ -1,5 +1,5 @@
 import { cn } from '../../lib/utils';
-import type { Phoneme } from '@packages/lecture-curriculum';
+import type { LectureActivityContent } from '@packages/lecture-curriculum';
 import { ArrowLeft, Volume2, MapPin, Eye, Puzzle, BookOpen, Pencil, BookOpenText, Lock, Mic2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Mascot } from '../Mascot';
@@ -7,7 +7,7 @@ import { Mascot } from '../Mascot';
 type ExerciseType = 'audio' | 'position' | 'dictation';
 
 interface ExerciseSelectorProps {
-  phoneme: Phoneme;
+  phoneme: LectureActivityContent;
   onSelectExercise: (exerciseType: ExerciseType) => void;
   onBack: () => void;
 }

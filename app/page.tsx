@@ -6,9 +6,12 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DOMAINS,
+  buildActivityUrl,
   getActivityRoute,
   getCycleById,
   getCyclesByTrack,
+  getCurriculumActivitiesBySelection,
+  getDefaultActivityType,
   getDomainById,
   getLevelsByTrackAndCycle,
   getTrackById,
@@ -30,7 +33,33 @@ export default function Home() {
   const tracks = useMemo(() => getTracksByDomain(domain?.id), [domain]);
   const cycles = useMemo(() => getCyclesByTrack(track), [track]);
   const levels = useMemo(() => getLevelsByTrackAndCycle(track, cycle), [track, cycle]);
-  const routeFinale = useMemo(() => getActivityRoute(selection), [selection]);
+  const activityType = useMemo(() => getDefaultActivityType(selection.trackId), [selection.trackId]);
+  const curriculumActivities = useMemo(
+    () => getCurriculumActivitiesBySelection(selection),
+    [selection]
+  );
+  const defaultActivityId = curriculumActivities[0]?.activityId;
+  const genericRoute = useMemo(() => {
+    if (!selection.domainId || !selection.trackId || !selection.levelId) {
+      return null;
+    }
+
+    if (!activityType || !defaultActivityId) {
+      return null;
+    }
+
+    return buildActivityUrl({
+      domainId: selection.domainId,
+      trackId: selection.trackId,
+      levelId: selection.levelId,
+      activityType,
+      params: { activityId: defaultActivityId }
+    });
+  }, [activityType, defaultActivityId, selection.domainId, selection.levelId, selection.trackId]);
+  const routeFinale = useMemo(
+    () => genericRoute ?? getActivityRoute(selection),
+    [genericRoute, selection]
+  );
 
   return (
     <div className="min-h-screen bg-background">

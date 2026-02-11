@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
-import type { Phoneme } from "@packages/lecture-curriculum";
+import type { LectureActivityContent } from "@packages/lecture-curriculum";
 import { ArrowLeft, RefreshCw, Volume2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -10,12 +10,15 @@ import { Progress } from "../ui/progress";
 import { Textarea } from "../ui/textarea";
 
 interface DictationExerciseProps {
-  phoneme: Phoneme;
+  phoneme: LectureActivityContent;
   onComplete: (score: number) => void;
   onBack: () => void;
+  onAttempt?: () => void;
+  onError?: (code: string) => void;
+  onSuccess?: () => void;
 }
 
-const buildSentences = (phoneme: Phoneme) => {
+const buildSentences = (phoneme: LectureActivityContent) => {
   const words = phoneme.exampleWords.slice(0, 4);
 
   if (phoneme.level === "GS") {
@@ -41,7 +44,7 @@ const buildSentences = (phoneme: Phoneme) => {
   ];
 };
 
-const maxLinesByLevel: Record<Phoneme["level"], number> = {
+const maxLinesByLevel: Record<LectureActivityContent["level"], number> = {
   GS: 3,
   CP: 6,
   CE1: 10,
@@ -194,7 +197,14 @@ const scoreSentence = (expected: string, actual: string): SentenceFeedback => {
   };
 };
 
-export const DictationExercise = ({ phoneme, onComplete, onBack }: DictationExerciseProps) => {
+export const DictationExercise = ({
+  phoneme,
+  onComplete,
+  onBack,
+  onAttempt,
+  onError,
+  onSuccess
+}: DictationExerciseProps) => {
   const sentences = useMemo(() => buildSentences(phoneme), [phoneme]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -297,6 +307,10 @@ export const DictationExercise = ({ phoneme, onComplete, onBack }: DictationExer
 
   const handleValidate = () => {
     const result = scoreSentence(currentSentence, answer);
+    onAttempt?.();
+    if (result.score < 100) {
+      onError?.("dictation-mismatch");
+    }
     const nextScores = [...scores, result.score];
     setScores(nextScores);
     setFeedback(result);
@@ -327,6 +341,7 @@ export const DictationExercise = ({ phoneme, onComplete, onBack }: DictationExer
     const resolvedScore = finalScore ??
       Math.round(scores.reduce((sum, value) => sum + value, 0) / Math.max(scores.length, 1));
     setIsComplete(true);
+    onSuccess?.();
     onComplete(resolvedScore);
   };
 

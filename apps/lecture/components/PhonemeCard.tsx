@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
-import type { Phoneme } from '@packages/lecture-curriculum';
+import type { LectureActivityContent } from '@packages/lecture-curriculum';
 import { Check, Lock } from 'lucide-react';
 
 interface PhonemeCardProps {
-  phoneme: Phoneme;
+  phoneme: LectureActivityContent;
   isUnlocked: boolean;
   isCompleted: boolean;
   progress: number;

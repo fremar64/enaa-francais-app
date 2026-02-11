@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   experimental: {
     externalDir: true
   },
-  transpilePackages: ["lecture-curriculum"],
+  transpilePackages: ["lecture-curriculum", "activity-engine", "activity-contract"],
 };
 
 export default nextConfig;

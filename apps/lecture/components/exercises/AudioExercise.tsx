@@ -1,14 +1,17 @@
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import type { Phoneme } from '@packages/lecture-curriculum';
+import type { LectureActivityContent } from '@packages/lecture-curriculum';
 import { Volume2, ArrowLeft, Star, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 interface AudioExerciseProps {
-  phoneme: Phoneme;
+  phoneme: LectureActivityContent;
   onComplete: (score: number) => void;
   onBack: () => void;
+  onAttempt?: () => void;
+  onError?: (code: string) => void;
+  onSuccess?: () => void;
 }
 
 interface Question {
@@ -16,7 +19,7 @@ interface Question {
   containsPhoneme: boolean;
 }
 
-const generateQuestions = (phoneme: Phoneme): Question[] => {
+const generateQuestions = (phoneme: LectureActivityContent): Question[] => {
   const wordsWithPhoneme = phoneme.exampleWords.slice(0, 5);
   const wordsWithoutPhoneme = getDistractorWords(phoneme);
 
@@ -29,7 +32,7 @@ const generateQuestions = (phoneme: Phoneme): Question[] => {
   return questions.sort(() => Math.random() - 0.5).slice(0, 8);
 };
 
-const getDistractorWords = (phoneme: Phoneme): string[] => {
+const getDistractorWords = (phoneme: LectureActivityContent): string[] => {
   const allDistractors: Record<string, string[]> = {
     a: ['bille', 'livre', 'plume', 'bulle'],
     i: ['chat', 'table', 'porte', 'mouton'],
@@ -59,7 +62,14 @@ const getDistractorWords = (phoneme: Phoneme): string[] => {
   return allDistractors[phoneme.symbol] || ['table', 'livre', 'porte', 'fenêtre'];
 };
 
-export const AudioExercise = ({ phoneme, onComplete, onBack }: AudioExerciseProps) => {
+export const AudioExercise = ({
+  phoneme,
+  onComplete,
+  onBack,
+  onAttempt,
+  onError,
+  onSuccess
+}: AudioExerciseProps) => {
   const [questions] = useState(() => generateQuestions(phoneme));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -81,6 +91,7 @@ export const AudioExercise = ({ phoneme, onComplete, onBack }: AudioExerciseProp
 
   const handleAnswer = (userAnswer: boolean) => {
     if (answered) return;
+    onAttempt?.();
 
     const isCorrect = userAnswer === currentQuestion.containsPhoneme;
     setAnswered(true);
@@ -88,6 +99,8 @@ export const AudioExercise = ({ phoneme, onComplete, onBack }: AudioExerciseProp
 
     if (isCorrect) {
       setScore((s) => s + 1);
+    } else {
+      onError?.("incorrect");
     }
 
     // Passage automatique après un délai
@@ -99,6 +112,7 @@ export const AudioExercise = ({ phoneme, onComplete, onBack }: AudioExerciseProp
       } else {
         setIsComplete(true);
         const finalScore = isCorrect ? score + 1 : score;
+        onSuccess?.();
         onComplete(Math.round((finalScore / questions.length) * 100));
       }
     }, 1500);
